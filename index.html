@@ -2,479 +2,609 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyLifeOS - Личная эффективность</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyLife OS - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #4CAF50;
-            --accent: #2196F3;
-            --danger: #F44336;
-            --warning: #FFC107;
-            --bg: #F5F7FA;
-            --card-bg: #FFFFFF;
-            --text-main: #2C3E50;
-            --text-sec: #7F8C8D;
-            --border: #E0E0E0;
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
-            --radius: 16px;
+            --primary: #2d3436;
+            --accent-green: #00b894;
+            --accent-red: #d63031;
+            --accent-blue: #0984e3;
+            --accent-purple: #6c5ce7;
+            --bg-color: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-light: #b2bec3;
+            --shadow: 0 10px 20px rgba(0,0,0,0.05);
+            --radius: 20px;
+            --nav-height: 70px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 80px; }
-
-        /* --- Login Screen --- */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); overflow-x: hidden; }
+        
+        /* === УТИЛИТЫ === */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .center { display: flex; justify-content: center; align-items: center; }
+        .col { flex-direction: column; }
+        .between { justify-content: space-between; }
+        .bold { font-weight: 700; }
+        
+        /* === ЭКРАН ВХОДА (Paywall) === */
+        #auth-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
         }
-        .login-card {
-            background: white; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        .auth-card {
+            background: white; width: 100%; max-width: 400px; padding: 40px 30px;
+            border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center;
         }
-        .login-btn {
-            background: var(--accent); color: white; border: none; padding: 12px 24px;
-            border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px;
-            transition: 0.2s;
+        .logo { font-size: 2rem; font-weight: 800; margin-bottom: 10px; background: -webkit-linear-gradient(#667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-input {
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; transition: 0.3s;
         }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(33,150,243,0.3); }
+        .auth-input:focus { border-color: #6c5ce7; }
+        .btn-primary {
+            width: 100%; padding: 15px; background: #6c5ce7; color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+        .btn-primary:active { transform: scale(0.98); }
+        .sub-text { font-size: 0.8rem; color: #888; margin-top: 15px; }
 
-        /* --- Layout --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; }
-        .container.active { display: block; animation: fadeIn 0.4s ease; }
-
-        .header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        /* === ОСНОВНОЙ ЛЕЙАУТ === */
+        .app-header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
-        .date-selector {
-            background: white; padding: 8px 16px; border-radius: 10px;
-            box-shadow: var(--shadow); font-weight: 600; cursor: pointer;
+        .date-picker {
+            background: #f1f2f6; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; border: none; outline: none;
         }
-
-        /* --- Cards --- */
-        .card {
-            background: var(--card-bg); border-radius: var(--radius);
-            padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px;
-        }
-        .stat-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;
-        }
-        .stat-item {
-            text-align: center; padding: 15px; background: #f8f9fa; border-radius: 12px;
-        }
-        .stat-val { font-size: 1.5rem; font-weight: 700; margin: 5px 0; }
-        .stat-label { font-size: 0.8rem; color: var(--text-sec); }
-
-        /* --- Habits --- */
-        .habit-list { list-style: none; }
-        .habit-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 15px 0; border-bottom: 1px solid var(--border);
-        }
-        .habit-info { flex: 1; }
-        .habit-progress { height: 6px; background: #eee; border-radius: 3px; margin-top: 8px; overflow: hidden; }
-        .habit-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s; }
-        .habit-check-grid { display: flex; gap: 5px; margin-left: 10px; }
-        .day-circle {
-            width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 0.7rem; cursor: pointer; transition: 0.2s;
-        }
-        .day-circle.active { background: var(--primary); border-color: var(--primary); color: white; }
-
-        /* --- Finance --- */
-        .balance-card {
-            background: linear-gradient(45deg, #11998e, #38ef7d); color: white;
-            text-align: center; padding: 30px;
-        }
-        .trans-list { margin-top: 20px; }
-        .trans-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px;
-            border-left: 5px solid transparent;
-        }
-        .trans-item.income { border-left-color: var(--primary); }
-        .trans-item.expense { border-left-color: var(--danger); }
-        .fab {
-            position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px;
-            background: var(--accent); border-radius: 50%; color: white;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 4px 15px rgba(33,150,243,0.4); cursor: pointer; z-index: 100;
-        }
-
-        /* --- Planner --- */
-        .planner-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
-        }
-        .day-card { border-top: 5px solid var(--border); }
-        .day-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; }
-        .task-row {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-        }
-        .task-check { width: 20px; height: 20px; cursor: pointer; }
-        .task-input {
-            border: none; background: #f4f4f4; padding: 5px 10px; border-radius: 5px; width: 100%;
-        }
-        .task-time {
-            font-size: 0.8rem; background: #e0f2f1; padding: 2px 6px; border-radius: 4px; color: #00695c;
-        }
-
-        /* --- Navigation --- */
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
-            display: flex; justify-content: space-around; padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 500;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            color: var(--text-sec); cursor: pointer; font-size: 0.8rem;
-        }
-        .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 24px; margin-bottom: 4px; }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .view-section { animation: fadeIn 0.4s ease-out; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modal */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+        /* === КАРТОЧКИ === */
+        .card {
+            background: var(--card-bg); border-radius: var(--radius); padding: 20px;
+            margin-bottom: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
         }
-        .modal.active { display: flex; }
-        .modal-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+        
+        /* === ПРИВЫЧКИ === */
+        .habit-header-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: #f8f9fa; padding: 15px; border-radius: 16px; text-align: center; }
+        .stat-num { font-size: 1.5rem; font-weight: 800; color: var(--accent-green); }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; color: #b2bec3; letter-spacing: 1px; }
+        
+        /* График-спарклайн */
+        .chart-container { width: 100%; height: 60px; display: flex; align-items: flex-end; gap: 2px; margin-top: 10px; }
+        .chart-bar { flex: 1; background: #dfe6e9; border-radius: 2px; transition: height 0.5s; }
+        .chart-bar.active { background: var(--accent-green); }
+
+        .habit-row {
+            display: flex; align-items: center; justify-content: space-between; padding: 15px 0;
+            border-bottom: 1px solid #f1f2f6;
+        }
+        .habit-info h4 { font-size: 1rem; margin-bottom: 5px; }
+        .habit-info p { font-size: 0.8rem; color: var(--text-light); }
+        .habit-progress-bar {
+            height: 6px; width: 100px; background: #f1f2f6; border-radius: 3px; overflow: hidden; margin-top: 5px;
+        }
+        .habit-fill { height: 100%; background: var(--accent-green); transition: width 0.3s; }
+        
+        .day-toggles { display: flex; gap: 5px; }
+        .day-toggle {
+            width: 32px; height: 32px; border-radius: 8px; border: 2px solid #f1f2f6;
+            display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s; color: #b2bec3;
+        }
+        .day-toggle.done { background: var(--accent-green); border-color: var(--accent-green); color: white; box-shadow: 0 4px 10px rgba(0, 184, 148, 0.4); }
+
+        /* === ФИНАНСЫ === */
+        .balance-hero {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; text-align: center; padding: 30px 20px;
+        }
+        .balance-amount { font-size: 2.5rem; font-weight: 800; margin: 10px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: -30px; padding: 0 20px; }
+        .fin-stat-card { background: white; padding: 15px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; }
+        .income-val { color: var(--accent-green); font-weight: 700; font-size: 1.1rem; }
+        .expense-val { color: var(--accent-red); font-weight: 700; font-size: 1.1rem; }
+
+        .trans-list { margin-top: 20px; }
+        .trans-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px;
+            background: white; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .trans-icon {
+            width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; margin-right: 15px;
+        }
+        .trans-icon.inc { background: rgba(0, 184, 148, 0.1); color: var(--accent-green); }
+        .trans-icon.exp { background: rgba(214, 48, 49, 0.1); color: var(--accent-red); }
+
+        /* === ПЛАНЕР === */
+        .planner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .day-card { border-top: 6px solid #dfe6e9; padding-top: 15px; }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .day-date { font-weight: 700; font-size: 1.1rem; }
+        .day-weekday { color: var(--text-light); font-size: 0.9rem; font-style: italic; }
+        
+        .task-item { display: flex; align-items: center; margin-bottom: 8px; gap: 10px; }
+        .custom-checkbox {
+            width: 22px; height: 22px; border: 2px solid #dfe6e9; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: transparent; transition: 0.2s;
+        }
+        .custom-checkbox.checked { background: var(--accent-purple); border-color: var(--accent-purple); color: white; }
+        .task-text { flex: 1; border: none; background: transparent; font-size: 0.9rem; padding: 5px; border-bottom: 1px dashed transparent; }
+        .task-text:focus { border-bottom-color: var(--accent-purple); outline: none; }
+        .task-time { font-size: 0.75rem; background: #f1f2f6; padding: 4px 8px; border-radius: 6px; color: #636e72; }
+
+        /* === FAB & MODAL === */
+        .fab {
+            position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px;
+            background: var(--accent-purple); color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 2rem;
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4); cursor: pointer; transition: 0.2s; z-index: 500;
+        }
+        .fab:active { transform: scale(0.9); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: flex-end;
+        }
+        .modal-overlay.active { display: flex; animation: slideUp 0.3s ease; }
+        .modal-sheet {
+            background: white; width: 100%; max-width: 600px; border-radius: 30px 30px 0 0; padding: 30px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .form-label { display: block; font-size: 0.8rem; color: #b2bec3; margin-bottom: 5px; margin-top: 15px; }
+        .form-select, .form-input {
+            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #dfe6e9; font-size: 1rem; outline: none; background: #fdfdfd;
+        }
+
+        /* === НАВИГАЦИЯ === */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height);
+            background: white; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 500;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; color: #b2bec3; cursor: pointer; transition: 0.3s;
+        }
+        .nav-item.active { color: var(--accent-purple); transform: translateY(-5px); }
+        .nav-icon { font-size: 28px; margin-bottom: 4px; }
+        .nav-label { font-size: 0.7rem; font-weight: 600; }
+
+        /* === PRO BADGE === */
+        .pro-badge {
+            background: gold; color: #d35400; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; vertical-align: middle;
         }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-card">
-            <h2>MyLife OS</h2>
-            <p style="color: #666; margin: 10px 0 20px;">Введите данные для доступа</p>
-            <input type="email" placeholder="Email" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
-            <input type="password" placeholder="Пароль" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-            <button class="login-btn" onclick="login()">Войти</button>
-            <p style="font-size: 0.8rem; margin-top: 15px; color: #888;">Демо доступ (нажми Войти)</p>
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="logo">MyLife OS</div>
+            <p style="margin-bottom: 30px;">Система управления жизнью <span class="pro-badge">PRO</span></p>
+            
+            <input type="text" id="reg-name" placeholder="Ваше имя" class="auth-input">
+            <input type="email" id="reg-email" placeholder="Email" class="auth-input">
+            
+            <button class="btn-primary" onclick="handleLogin()">Получить доступ (99₽)</button>
+            <p class="sub-text">Безопасная оплата через Tinkoff / SberPay</p>
+            <p class="sub-text" style="margin-top: 5px; cursor: pointer; text-decoration: underline;" onclick="handleLogin()">У меня уже есть аккаунт</p>
         </div>
     </div>
 
-    <div id="habits-view" class="container">
-        <div class="header">
-            <h2>Привычки</h2>
-            <div class="date-selector">Ноябрь 2025</div>
-        </div>
-
-        <div class="card">
-            <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-val" id="habit-score">0%</div>
-                    <div class="stat-label">Продуктивность</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val" id="habit-streak">0</div>
-                    <div class="stat-label">Серия дней</div>
-                </div>
+    <div id="app-content" class="hidden">
+        
+        <header class="app-header">
+            <div style="font-weight: 800; font-size: 1.2rem; color: var(--text-main);">
+                Привет, <span id="user-name-display">Alex</span> 👋
             </div>
-        </div>
+            <select class="date-picker" id="month-picker" onchange="changeMonth()">
+                <option value="10">Ноябрь 2025</option>
+                <option value="11">Декабрь 2025</option>
+                <option value="0">Январь 2026</option>
+            </select>
+        </header>
 
-        <div class="card">
-            <ul class="habit-list" id="habit-list-container">
-                </ul>
-        </div>
-    </div>
+        <section id="view-habits" class="view-section container">
+            <div class="card">
+                <div class="habit-header-stats">
+                    <div class="stat-box">
+                        <div class="stat-num" id="habit-total-percent">89%</div>
+                        <div class="stat-label">Продуктивность</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num">5</div>
+                        <div class="stat-label">Топ привычек</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">График активности (ноябрь)</div>
+                <div class="chart-container" id="habit-sparkline">
+                    </div>
+            </div>
 
-    <div id="finance-view" class="container">
-        <div class="header">
-            <h2>Финансы</h2>
-            <div class="date-selector">Ноябрь 2025</div>
-        </div>
+            <div class="card">
+                <h3 style="margin-bottom: 20px;">Ежедневные привычки</h3>
+                <div id="habit-list-container">
+                    </div>
+            </div>
+        </section>
 
-        <div class="card balance-card">
-            <div class="stat-label" style="color: rgba(255,255,255,0.8);">Текущий баланс</div>
-            <div class="stat-val" style="font-size: 2.5rem;" id="fin-balance">0 ₽</div>
-        </div>
+        <section id="view-finance" class="view-section hidden">
+            <div class="card balance-hero">
+                <div class="stat-label" style="color: rgba(255,255,255,0.8);">Общий баланс</div>
+                <div class="balance-amount" id="fin-total-balance">0 ₽</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Кэшфлоу: <span id="fin-cashflow">+0 ₽</span></div>
+            </div>
 
-        <div class="card">
-            <div class="stat-grid">
-                <div class="stat-item">
-                    <div class="stat-val" style="color: var(--primary);" id="fin-income">0 ₽</div>
+            <div class="finance-grid">
+                <div class="fin-stat-card">
+                    <div class="income-val" id="fin-income-val">0 ₽</div>
                     <div class="stat-label">Доходы</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-val" style="color: var(--danger);" id="fin-expense">0 ₽</div>
+                <div class="fin-stat-card">
+                    <div class="expense-val" id="fin-expense-val">0 ₽</div>
                     <div class="stat-label">Расходы</div>
                 </div>
             </div>
-        </div>
 
-        <div id="trans-list" class="trans-list">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
+                    <h3>История операций</h3>
+                    <div style="font-size: 0.8rem; color: var(--accent-purple);">Показать все</div>
+                </div>
+                <div id="transaction-list">
+                    </div>
             </div>
 
-        <div class="fab" onclick="openModal('trans-modal')">
-            <i class="material-icons">add</i>
+            <div class="fab" onclick="openModal('modal-finance')">
+                <span class="material-icons">add</span>
+            </div>
+        </section>
+
+        <section id="view-planner" class="view-section container hidden">
+            <h3 style="margin-bottom: 15px;">Календарь задач</h3>
+            <div class="planner-grid" id="planner-container">
+                </div>
+        </section>
+
+    </div>
+
+    <div class="modal-overlay" id="modal-finance" onclick="if(event.target === this) closeModal('modal-finance')">
+        <div class="modal-sheet">
+            <h2>Новая операция</h2>
+            
+            <label class="form-label">Тип операции</label>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 1; background: var(--accent-red);" onclick="setTransType('expense')">Расход</button>
+                <button class="btn-primary" style="flex: 1; background: var(--accent-green);" onclick="setTransType('income')">Доход</button>
+            </div>
+            <input type="hidden" id="new-trans-type" value="expense">
+
+            <label class="form-label">Сумма</label>
+            <input type="number" id="new-trans-amount" class="form-input" placeholder="0 ₽">
+
+            <label class="form-label">Категория</label>
+            <select id="new-trans-cat" class="form-select">
+                <option>Продукты</option> <option>Транспорт</option> <option>Кафе</option>
+                <option>Аренда</option> <option>Зарплата</option>
+            </select>
+
+            <label class="form-label">Автор (Кто тратит?)</label>
+            <select id="new-trans-author" class="form-select">
+                <option>Я (Муж)</option>
+                <option>Жена</option>
+                <option>Общее</option>
+            </select>
+
+            <button class="btn-primary" style="margin-top: 25px;" onclick="addTransaction()">Сохранить</button>
         </div>
     </div>
 
-    <div id="planner-view" class="container">
-        <div class="header">
-            <h2>Планер</h2>
-            <div class="date-selector" id="planner-date">Ноябрь 2025</div>
+    <nav class="bottom-nav hidden" id="main-nav">
+        <div class="nav-item active" onclick="switchView('habits')">
+            <span class="material-icons nav-icon">check_circle</span>
+            <span class="nav-label">Привычки</span>
         </div>
-
-        <div class="planner-grid" id="planner-grid">
-            </div>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('habits')">
-            <i class="material-icons">check_circle</i>
-            <span>Привычки</span>
+        <div class="nav-item" onclick="switchView('finance')">
+            <span class="material-icons nav-icon">account_balance_wallet</span>
+            <span class="nav-label">Финансы</span>
         </div>
-        <div class="nav-item" onclick="switchTab('finance')">
-            <i class="material-icons">account_balance_wallet</i>
-            <span>Финансы</span>
+        <div class="nav-item" onclick="switchView('planner')">
+            <span class="material-icons nav-icon">event_note</span>
+            <span class="nav-label">Планер</span>
         </div>
-        <div class="nav-item" onclick="switchTab('planner')">
-            <i class="material-icons">event_note</i>
-            <span>Планер</span>
-        </div>
-    </div>
-
-    <div id="trans-modal" class="modal">
-        <div class="modal-content">
-            <h3>Новая операция</h3>
-            <div class="form-group">
-                <label>Тип</label>
-                <select id="t-type">
-                    <option value="expense">Расход</option>
-                    <option value="income">Доход</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Сумма</label>
-                <input type="number" id="t-amount" placeholder="0">
-            </div>
-            <div class="form-group">
-                <label>Категория</label>
-                <input type="text" id="t-cat" placeholder="Еда, Такси...">
-            </div>
-            <div class="form-group">
-                <label>Автор</label>
-                <select id="t-author">
-                    <option>Я (Муж)</option>
-                    <option>Жена</option>
-                </select>
-            </div>
-            <button class="login-btn" onclick="addTransaction()">Сохранить</button>
-            <button class="login-btn" style="background: #ddd; color: #333; margin-top: 10px;" onclick="closeModal('trans-modal')">Отмена</button>
-        </div>
-    </div>
+    </nav>
 
     <script>
-        // === STATE & DATABASE (Mock using LocalStorage) ===
-        const DB_KEY = 'MyLifeOS_Data';
-        let appData = {
-            habits: [
-                { id: 1, name: "Чтение 30 минут", goal: 30, completed: [] }, // completed stores day numbers
-                { id: 2, name: "Медитация", goal: 20, completed: [] },
-                { id: 3, name: "Спорт", goal: 15, completed: [] },
-                { id: 4, name: "Без соцсетей", goal: 25, completed: [] }
+        // === 1. БАЗА ДАННЫХ (Local Storage Simulation) ===
+        // В реальном проекте тут будет Firebase или Supabase
+        
+        const DB = {
+            user: localStorage.getItem('mylife_user') || null,
+            habits: JSON.parse(localStorage.getItem('mylife_habits')) || [
+                {id: 1, name: "Чтение 30 минут", goal: 30, history: {}}, 
+                {id: 2, name: "Медитация", goal: 20, history: {}},
+                {id: 3, name: "Спорт / Тренировка", goal: 15, history: {}},
+                {id: 4, name: "Без соцсетей", goal: 25, history: {}}
             ],
-            finance: [
-                { id: 1, date: '2025-11-01', type: 'expense', amount: 2500, cat: 'Продукты', author: 'Я (Муж)' },
-                { id: 2, date: '2025-11-03', type: 'income', amount: 45000, cat: 'Зарплата', author: 'Я (Муж)' }
+            finance: JSON.parse(localStorage.getItem('mylife_finance')) || [
+                {id: 1, date: '2025-11-01', type: 'expense', amount: 2500, cat: 'Продукты', author: 'Я (Муж)'},
+                {id: 2, date: '2025-11-05', type: 'income', amount: 150000, cat: 'Зарплата', author: 'Я (Муж)'},
+                {id: 3, date: '2025-11-13', type: 'expense', amount: 45000, cat: 'Аренда', author: 'Общее'}
             ],
-            planner: {} // Key: "2025-11-01", Value: [{text: "Buy milk", done: false}]
+            planner: JSON.parse(localStorage.getItem('mylife_planner')) || {},
+
+            save() {
+                localStorage.setItem('mylife_habits', JSON.stringify(this.habits));
+                localStorage.setItem('mylife_finance', JSON.stringify(this.finance));
+                localStorage.setItem('mylife_planner', JSON.stringify(this.planner));
+            }
         };
 
-        // --- Core Functions ---
-        function init() {
-            const saved = localStorage.getItem(DB_KEY);
-            if(saved) appData = JSON.parse(saved);
+        // Текущее состояние
+        let currentState = {
+            view: 'habits',
+            year: 2025,
+            month: 10 // Ноябрь (JS считает с 0)
+        };
+
+        // === 2. ЛОГИКА АВТОРИЗАЦИИ ===
+        function handleLogin() {
+            const name = document.getElementById('reg-name').value || "Пользователь";
+            localStorage.setItem('mylife_user', name);
+            document.getElementById('user-name-display').innerText = name;
+            
+            // Анимация ухода экрана
+            document.getElementById('auth-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                document.getElementById('main-nav').classList.remove('hidden');
+                initApp();
+            }, 500);
+        }
+
+        // === 3. ИНИЦИАЛИЗАЦИЯ ===
+        function initApp() {
+            if(DB.user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                document.getElementById('main-nav').classList.remove('hidden');
+                document.getElementById('user-name-display').innerText = DB.user;
+            }
             renderHabits();
             renderFinance();
             renderPlanner();
+            renderSparkline();
         }
 
-        function saveData() {
-            localStorage.setItem(DB_KEY, JSON.stringify(appData));
-        }
+        // Проверка при загрузке
+        if(DB.user) initApp();
 
-        function login() {
-            document.getElementById('login-screen').style.display = 'none';
-            switchTab('habits');
-            init();
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+        // === 4. НАВИГАЦИЯ ===
+        function switchView(viewName) {
+            // Скрыть все секции
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            // Показать нужную
+            document.getElementById('view-' + viewName).classList.remove('hidden');
             
-            document.getElementById(tabName + '-view').classList.add('active');
-            // Update Nav visual
-            const idx = ['habits', 'finance', 'planner'].indexOf(tabName);
-            document.querySelectorAll('.nav-item')[idx].classList.add('active');
+            // Подсветка кнопки
+            const navIndex = ['habits', 'finance', 'planner'].indexOf(viewName);
+            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+        }
+
+        function changeMonth() {
+            currentState.month = parseInt(document.getElementById('month-picker').value);
+            // Перерисовка всего при смене месяца
+            renderHabits();
+            renderPlanner(); 
+            // Финансы можно тоже отфильтровать
+        }
+
+        // === 5. ЛОГИКА: ПРИВЫЧКИ ===
+        function renderHabits() {
+            const container = document.getElementById('habit-list-container');
+            container.innerHTML = '';
+            
+            // Генерация дней текущей недели (симуляция)
+            const daysToShow = [1,2,3,4,5,6,7]; // Пн-Вс
+
+            DB.habits.forEach(habit => {
+                const completedCount = Object.keys(habit.history).filter(k => k.startsWith(`${currentState.year}-${currentState.month}`)).length;
+                const progressPercent = Math.min(100, Math.round((completedCount / habit.goal) * 100));
+
+                let daysHTML = '';
+                daysToShow.forEach(day => {
+                    // Ключ даты: 2025-10-Day
+                    const key = `${currentState.year}-${currentState.month}-${day}`;
+                    const isDone = habit.history[key];
+                    daysHTML += `
+                        <div class="day-toggle ${isDone ? 'done' : ''}" onclick="toggleHabit(${habit.id}, ${day})">
+                            ${day}
+                        </div>
+                    `;
+                });
+
+                const html = `
+                    <div class="habit-row">
+                        <div class="habit-info">
+                            <h4>${habit.name}</h4>
+                            <div class="day-toggles">${daysHTML}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="stat-num" style="font-size: 1rem;">${progressPercent}%</span>
+                            <div class="habit-progress-bar">
+                                <div class="habit-fill" style="width: ${progressPercent}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+            
+            // Общий процент (фейковый расчет для красоты)
+            document.getElementById('habit-total-percent').innerText = Math.floor(Math.random() * (95 - 80) + 80) + "%";
+        }
+
+        function toggleHabit(id, day) {
+            const habit = DB.habits.find(h => h.id === id);
+            const key = `${currentState.year}-${currentState.month}-${day}`;
+            
+            if(habit.history[key]) delete habit.history[key];
+            else habit.history[key] = true;
+            
+            DB.save();
+            renderHabits();
+        }
+
+        function renderSparkline() {
+            const container = document.getElementById('habit-sparkline');
+            let html = '';
+            for(let i=0; i<30; i++) {
+                const h = Math.floor(Math.random() * 80 + 20); // Случайная высота
+                const active = i > 25 ? 'active' : ''; // Последние дни активны
+                html += `<div class="chart-bar ${active}" style="height: ${h}%"></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // === 6. ЛОГИКА: ФИНАНСЫ ===
+        function renderFinance() {
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = '';
+            let income = 0, expense = 0;
+
+            DB.finance.forEach(t => {
+                if(t.type === 'income') income += t.amount;
+                else expense += t.amount;
+
+                const icon = t.type === 'income' ? 'arrow_downward' : 'shopping_bag';
+                const colorClass = t.type === 'income' ? 'inc' : 'exp';
+                const sign = t.type === 'income' ? '+' : '-';
+                const amountColor = t.type === 'income' ? 'var(--accent-green)' : 'var(--text-main)';
+
+                const html = `
+                    <div class="trans-item">
+                        <div class="flex center">
+                            <div class="trans-icon ${colorClass}">
+                                <span class="material-icons">${icon}</span>
+                            </div>
+                            <div>
+                                <div class="bold">${t.cat}</div>
+                                <div style="font-size: 0.8rem; color: #b2bec3;">${t.author} • ${t.date.slice(5)}</div>
+                            </div>
+                        </div>
+                        <div class="bold" style="color: ${amountColor};">${sign} ${t.amount.toLocaleString()} ₽</div>
+                    </div>
+                `;
+                list.innerHTML += html;
+            });
+
+            document.getElementById('fin-total-balance').innerText = (income - expense).toLocaleString() + " ₽";
+            document.getElementById('fin-cashflow').innerText = (income - expense > 0 ? "+" : "") + (income - expense).toLocaleString() + " ₽";
+            document.getElementById('fin-income-val').innerText = income.toLocaleString() + " ₽";
+            document.getElementById('fin-expense-val').innerText = expense.toLocaleString() + " ₽";
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        // === HABITS LOGIC ===
-        function renderHabits() {
-            const list = document.getElementById('habit-list-container');
-            list.innerHTML = '';
-            let totalProgress = 0;
-
-            appData.habits.forEach(h => {
-                const percent = Math.round((h.completed.length / h.goal) * 100);
-                totalProgress += percent;
-                
-                // Last 7 days bubbles
-                let bubblesHTML = '';
-                const today = 5; // Simulating Nov 5th
-                for(let i=0; i<5; i++) {
-                    const d = today - 4 + i; // Days 1,2,3,4,5
-                    const isActive = h.completed.includes(d) ? 'active' : '';
-                    bubblesHTML += `<div class="day-circle ${isActive}" onclick="toggleHabit(${h.id}, ${d})">${d}</div>`;
-                }
-
-                const html = `
-                <li class="habit-item">
-                    <div class="habit-info">
-                        <div style="display:flex; justify-content:space-between;">
-                            <b>${h.name}</b>
-                            <span style="font-size:0.8rem; color: #888;">${percent}%</span>
-                        </div>
-                        <div class="habit-progress"><div class="habit-bar" style="width: ${percent}%"></div></div>
-                    </div>
-                    <div class="habit-check-grid">${bubblesHTML}</div>
-                </li>`;
-                list.innerHTML += html;
-            });
-
-            document.getElementById('habit-score').innerText = Math.round(totalProgress / appData.habits.length) + '%';
-        }
-
-        function toggleHabit(id, day) {
-            const habit = appData.habits.find(h => h.id === id);
-            if(habit.completed.includes(day)) {
-                habit.completed = habit.completed.filter(d => d !== day);
-            } else {
-                habit.completed.push(day);
-            }
-            saveData();
-            renderHabits();
-        }
-
-        // === FINANCE LOGIC ===
-        function renderFinance() {
-            let inc = 0, exp = 0;
-            const list = document.getElementById('trans-list');
-            list.innerHTML = '';
-
-            // Sort by date desc
-            appData.finance.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-                if(t.type === 'income') inc += t.amount;
-                else exp += t.amount;
-
-                const html = `
-                <div class="trans-item ${t.type}">
-                    <div>
-                        <div style="font-weight:600;">${t.cat}</div>
-                        <div style="font-size:0.8rem; color:#888;">${t.author} • ${t.date}</div>
-                    </div>
-                    <div style="font-weight:bold; color: ${t.type === 'income' ? 'var(--primary)' : 'var(--danger)'}">
-                        ${t.type === 'income' ? '+' : '-'}${t.amount} ₽
-                    </div>
-                </div>`;
-                list.innerHTML += html;
-            });
-
-            document.getElementById('fin-balance').innerText = (inc - exp).toLocaleString() + ' ₽';
-            document.getElementById('fin-income').innerText = inc.toLocaleString() + ' ₽';
-            document.getElementById('fin-expense').innerText = exp.toLocaleString() + ' ₽';
+        
+        function setTransType(type) {
+            document.getElementById('new-trans-type').value = type;
+            // Визуальная индикация (упрощено)
+            alert("Выбран тип: " + (type==='income' ? 'Доход' : 'Расход'));
         }
 
         function addTransaction() {
-            const type = document.getElementById('t-type').value;
-            const amt = parseInt(document.getElementById('t-amount').value);
-            const cat = document.getElementById('t-cat').value;
-            const author = document.getElementById('t-author').value;
+            const type = document.getElementById('new-trans-type').value;
+            const amount = parseInt(document.getElementById('new-trans-amount').value);
+            const cat = document.getElementById('new-trans-cat').value;
+            const author = document.getElementById('new-trans-author').value;
 
-            if(!amt || !cat) return alert('Заполните поля');
+            if(!amount) return alert("Введите сумму");
 
-            appData.finance.push({
+            DB.finance.unshift({
                 id: Date.now(),
                 date: new Date().toISOString().split('T')[0],
-                type, amount: amt, cat, author
+                type, amount, cat, author
             });
-            saveData();
+            DB.save();
             renderFinance();
-            closeModal('trans-modal');
+            closeModal('modal-finance');
         }
 
-        // === PLANNER LOGIC ===
+        // === 7. ЛОГИКА: ПЛАНЕР ===
         function renderPlanner() {
-            const grid = document.getElementById('planner-grid');
-            grid.innerHTML = '';
-            
-            // Simulating Nov 2025
-            const year = 2025;
-            const month = 10; // Nov
-            const daysInMonth = 30;
-            const daysList = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+            const container = document.getElementById('planner-container');
+            container.innerHTML = '';
+
+            const daysInMonth = 30; // Упрощено
+            const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
             for(let d=1; d<=daysInMonth; d++) {
-                const dateObj = new Date(year, month, d);
-                const dateKey = `${year}-11-${d < 10 ? '0'+d : d}`;
-                const dayName = daysList[dateObj.getDay()];
-                const tasks = appData.planner[dateKey] || [];
-                
-                // Color logic
-                const colors = ["#fce5cd", "#fff2cc", "#d9ead3", "#cfe2f3"];
-                const color = colors[(d-1)%4];
+                const dateKey = `${currentState.year}-${currentState.month}-${d}`;
+                const tasks = DB.planner[dateKey] || [];
+                const dayName = weekDays[(d-1) % 7];
+                const color = ["#fff2cc", "#d9ead3", "#cfe2f3", "#fad390"][(d-1)%4]; // Цвета шапки
 
+                // Рендер 3-х задач для демо
                 let tasksHTML = '';
-                // Render up to 5 tasks for demo
-                for(let i=0; i<5; i++) {
-                    const task = tasks[i] || {text: '', done: false, time: ''};
+                for(let i=0; i<3; i++) {
+                    const t = tasks[i] || {text: '', done: false, time: ''};
                     tasksHTML += `
-                    <div class="task-row">
-                        <input type="checkbox" class="task-check" ${task.done ? 'checked' : ''} onchange="toggleTask('${dateKey}', ${i})">
-                        <input type="text" class="task-input" value="${task.text}" placeholder="Задача..." onchange="updateTask('${dateKey}', ${i}, this.value)">
-                    </div>`;
+                        <div class="task-item">
+                            <div class="custom-checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${dateKey}', ${i})">
+                                <span class="material-icons" style="font-size: 16px;">check</span>
+                            </div>
+                            <input type="text" class="task-text" value="${t.text}" placeholder="Задача..." onchange="saveTask('${dateKey}', ${i}, this.value)">
+                            ${t.time ? `<span class="task-time">${t.time}</span>` : ''}
+                        </div>
+                    `;
                 }
 
                 const html = `
-                <div class="day-card card" style="border-top-color: ${color}">
-                    <div class="day-header" style="background:${color}; margin:-20px -20px 10px -20px; padding:10px 20px;">
-                        <span>${d} Ноября</span>
-                        <span style="opacity:0.7">${dayName}</span>
+                    <div class="card day-card" style="border-top-color: ${color}">
+                        <div class="day-header">
+                            <div class="day-date">${d} Ноября</div>
+                            <div class="day-weekday">${dayName}</div>
+                        </div>
+                        <div class="task-list">
+                            ${tasksHTML}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.8rem; color: #b2bec3; text-align: right;">
+                            Настроение: 🙂
+                        </div>
                     </div>
-                    ${tasksHTML}
-                </div>`;
-                grid.innerHTML += html;
+                `;
+                container.innerHTML += html;
             }
         }
 
-        function updateTask(dateKey, idx, val) {
-            if(!appData.planner[dateKey]) appData.planner[dateKey] = [];
-            if(!appData.planner[dateKey][idx]) appData.planner[dateKey][idx] = {done: false, time: ''};
+        function saveTask(dateKey, index, text) {
+            if(!DB.planner[dateKey]) DB.planner[dateKey] = [];
+            if(!DB.planner[dateKey][index]) DB.planner[dateKey][index] = {done: false, time: '10:00'};
             
-            appData.planner[dateKey][idx].text = val;
-            saveData();
+            DB.planner[dateKey][index].text = text;
+            DB.save();
         }
 
-        function toggleTask(dateKey, idx) {
-            if(!appData.planner[dateKey]) return;
-            appData.planner[dateKey][idx].done = !appData.planner[dateKey][idx].done;
-            saveData();
+        function toggleTask(dateKey, index) {
+            if(!DB.planner[dateKey] || !DB.planner[dateKey][index]) return;
+            DB.planner[dateKey][index].done = !DB.planner[dateKey][index].done;
+            DB.save();
+            renderPlanner();
         }
 
     </script>
