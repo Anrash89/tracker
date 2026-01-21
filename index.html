@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyLifeOS - Личная эффективность</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --accent: #2196F3;
+            --danger: #F44336;
+            --warning: #FFC107;
+            --bg: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text-main: #2C3E50;
+            --text-sec: #7F8C8D;
+            --border: #E0E0E0;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 80px; }
+
+        /* --- Login Screen --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .login-card {
+            background: white; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .login-btn {
+            background: var(--accent); color: white; border: none; padding: 12px 24px;
+            border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px;
+            transition: 0.2s;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(33,150,243,0.3); }
+
+        /* --- Layout --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; }
+        .container.active { display: block; animation: fadeIn 0.4s ease; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .date-selector {
+            background: white; padding: 8px 16px; border-radius: 10px;
+            box-shadow: var(--shadow); font-weight: 600; cursor: pointer;
+        }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--card-bg); border-radius: var(--radius);
+            padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px;
+        }
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;
+        }
+        .stat-item {
+            text-align: center; padding: 15px; background: #f8f9fa; border-radius: 12px;
+        }
+        .stat-val { font-size: 1.5rem; font-weight: 700; margin: 5px 0; }
+        .stat-label { font-size: 0.8rem; color: var(--text-sec); }
+
+        /* --- Habits --- */
+        .habit-list { list-style: none; }
+        .habit-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 0; border-bottom: 1px solid var(--border);
+        }
+        .habit-info { flex: 1; }
+        .habit-progress { height: 6px; background: #eee; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .habit-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s; }
+        .habit-check-grid { display: flex; gap: 5px; margin-left: 10px; }
+        .day-circle {
+            width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.7rem; cursor: pointer; transition: 0.2s;
+        }
+        .day-circle.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        /* --- Finance --- */
+        .balance-card {
+            background: linear-gradient(45deg, #11998e, #38ef7d); color: white;
+            text-align: center; padding: 30px;
+        }
+        .trans-list { margin-top: 20px; }
+        .trans-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px;
+            border-left: 5px solid transparent;
+        }
+        .trans-item.income { border-left-color: var(--primary); }
+        .trans-item.expense { border-left-color: var(--danger); }
+        .fab {
+            position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px;
+            background: var(--accent); border-radius: 50%; color: white;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 15px rgba(33,150,243,0.4); cursor: pointer; z-index: 100;
+        }
+
+        /* --- Planner --- */
+        .planner-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+        }
+        .day-card { border-top: 5px solid var(--border); }
+        .day-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; }
+        .task-row {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+        }
+        .task-check { width: 20px; height: 20px; cursor: pointer; }
+        .task-input {
+            border: none; background: #f4f4f4; padding: 5px 10px; border-radius: 5px; width: 100%;
+        }
+        .task-time {
+            font-size: 0.8rem; background: #e0f2f1; padding: 2px 6px; border-radius: 4px; color: #00695c;
+        }
+
+        /* --- Navigation --- */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+            display: flex; justify-content: space-around; padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 500;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-sec); cursor: pointer; font-size: 0.8rem;
+        }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 24px; margin-bottom: 4px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>MyLife OS</h2>
+            <p style="color: #666; margin: 10px 0 20px;">Введите данные для доступа</p>
+            <input type="email" placeholder="Email" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="password" placeholder="Пароль" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+            <button class="login-btn" onclick="login()">Войти</button>
+            <p style="font-size: 0.8rem; margin-top: 15px; color: #888;">Демо доступ (нажми Войти)</p>
+        </div>
+    </div>
+
+    <div id="habits-view" class="container">
+        <div class="header">
+            <h2>Привычки</h2>
+            <div class="date-selector">Ноябрь 2025</div>
+        </div>
+
+        <div class="card">
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-val" id="habit-score">0%</div>
+                    <div class="stat-label">Продуктивность</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" id="habit-streak">0</div>
+                    <div class="stat-label">Серия дней</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <ul class="habit-list" id="habit-list-container">
+                </ul>
+        </div>
+    </div>
+
+    <div id="finance-view" class="container">
+        <div class="header">
+            <h2>Финансы</h2>
+            <div class="date-selector">Ноябрь 2025</div>
+        </div>
+
+        <div class="card balance-card">
+            <div class="stat-label" style="color: rgba(255,255,255,0.8);">Текущий баланс</div>
+            <div class="stat-val" style="font-size: 2.5rem;" id="fin-balance">0 ₽</div>
+        </div>
+
+        <div class="card">
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-val" style="color: var(--primary);" id="fin-income">0 ₽</div>
+                    <div class="stat-label">Доходы</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" style="color: var(--danger);" id="fin-expense">0 ₽</div>
+                    <div class="stat-label">Расходы</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="trans-list" class="trans-list">
+            </div>
+
+        <div class="fab" onclick="openModal('trans-modal')">
+            <i class="material-icons">add</i>
+        </div>
+    </div>
+
+    <div id="planner-view" class="container">
+        <div class="header">
+            <h2>Планер</h2>
+            <div class="date-selector" id="planner-date">Ноябрь 2025</div>
+        </div>
+
+        <div class="planner-grid" id="planner-grid">
+            </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="switchTab('habits')">
+            <i class="material-icons">check_circle</i>
+            <span>Привычки</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('finance')">
+            <i class="material-icons">account_balance_wallet</i>
+            <span>Финансы</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('planner')">
+            <i class="material-icons">event_note</i>
+            <span>Планер</span>
+        </div>
+    </div>
+
+    <div id="trans-modal" class="modal">
+        <div class="modal-content">
+            <h3>Новая операция</h3>
+            <div class="form-group">
+                <label>Тип</label>
+                <select id="t-type">
+                    <option value="expense">Расход</option>
+                    <option value="income">Доход</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Сумма</label>
+                <input type="number" id="t-amount" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Категория</label>
+                <input type="text" id="t-cat" placeholder="Еда, Такси...">
+            </div>
+            <div class="form-group">
+                <label>Автор</label>
+                <select id="t-author">
+                    <option>Я (Муж)</option>
+                    <option>Жена</option>
+                </select>
+            </div>
+            <button class="login-btn" onclick="addTransaction()">Сохранить</button>
+            <button class="login-btn" style="background: #ddd; color: #333; margin-top: 10px;" onclick="closeModal('trans-modal')">Отмена</button>
+        </div>
+    </div>
+
+    <script>
+        // === STATE & DATABASE (Mock using LocalStorage) ===
+        const DB_KEY = 'MyLifeOS_Data';
+        let appData = {
+            habits: [
+                { id: 1, name: "Чтение 30 минут", goal: 30, completed: [] }, // completed stores day numbers
+                { id: 2, name: "Медитация", goal: 20, completed: [] },
+                { id: 3, name: "Спорт", goal: 15, completed: [] },
+                { id: 4, name: "Без соцсетей", goal: 25, completed: [] }
+            ],
+            finance: [
+                { id: 1, date: '2025-11-01', type: 'expense', amount: 2500, cat: 'Продукты', author: 'Я (Муж)' },
+                { id: 2, date: '2025-11-03', type: 'income', amount: 45000, cat: 'Зарплата', author: 'Я (Муж)' }
+            ],
+            planner: {} // Key: "2025-11-01", Value: [{text: "Buy milk", done: false}]
+        };
+
+        // --- Core Functions ---
+        function init() {
+            const saved = localStorage.getItem(DB_KEY);
+            if(saved) appData = JSON.parse(saved);
+            renderHabits();
+            renderFinance();
+            renderPlanner();
+        }
+
+        function saveData() {
+            localStorage.setItem(DB_KEY, JSON.stringify(appData));
+        }
+
+        function login() {
+            document.getElementById('login-screen').style.display = 'none';
+            switchTab('habits');
+            init();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName + '-view').classList.add('active');
+            // Update Nav visual
+            const idx = ['habits', 'finance', 'planner'].indexOf(tabName);
+            document.querySelectorAll('.nav-item')[idx].classList.add('active');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // === HABITS LOGIC ===
+        function renderHabits() {
+            const list = document.getElementById('habit-list-container');
+            list.innerHTML = '';
+            let totalProgress = 0;
+
+            appData.habits.forEach(h => {
+                const percent = Math.round((h.completed.length / h.goal) * 100);
+                totalProgress += percent;
+                
+                // Last 7 days bubbles
+                let bubblesHTML = '';
+                const today = 5; // Simulating Nov 5th
+                for(let i=0; i<5; i++) {
+                    const d = today - 4 + i; // Days 1,2,3,4,5
+                    const isActive = h.completed.includes(d) ? 'active' : '';
+                    bubblesHTML += `<div class="day-circle ${isActive}" onclick="toggleHabit(${h.id}, ${d})">${d}</div>`;
+                }
+
+                const html = `
+                <li class="habit-item">
+                    <div class="habit-info">
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>${h.name}</b>
+                            <span style="font-size:0.8rem; color: #888;">${percent}%</span>
+                        </div>
+                        <div class="habit-progress"><div class="habit-bar" style="width: ${percent}%"></div></div>
+                    </div>
+                    <div class="habit-check-grid">${bubblesHTML}</div>
+                </li>`;
+                list.innerHTML += html;
+            });
+
+            document.getElementById('habit-score').innerText = Math.round(totalProgress / appData.habits.length) + '%';
+        }
+
+        function toggleHabit(id, day) {
+            const habit = appData.habits.find(h => h.id === id);
+            if(habit.completed.includes(day)) {
+                habit.completed = habit.completed.filter(d => d !== day);
+            } else {
+                habit.completed.push(day);
+            }
+            saveData();
+            renderHabits();
+        }
+
+        // === FINANCE LOGIC ===
+        function renderFinance() {
+            let inc = 0, exp = 0;
+            const list = document.getElementById('trans-list');
+            list.innerHTML = '';
+
+            // Sort by date desc
+            appData.finance.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+                if(t.type === 'income') inc += t.amount;
+                else exp += t.amount;
+
+                const html = `
+                <div class="trans-item ${t.type}">
+                    <div>
+                        <div style="font-weight:600;">${t.cat}</div>
+                        <div style="font-size:0.8rem; color:#888;">${t.author} • ${t.date}</div>
+                    </div>
+                    <div style="font-weight:bold; color: ${t.type === 'income' ? 'var(--primary)' : 'var(--danger)'}">
+                        ${t.type === 'income' ? '+' : '-'}${t.amount} ₽
+                    </div>
+                </div>`;
+                list.innerHTML += html;
+            });
+
+            document.getElementById('fin-balance').innerText = (inc - exp).toLocaleString() + ' ₽';
+            document.getElementById('fin-income').innerText = inc.toLocaleString() + ' ₽';
+            document.getElementById('fin-expense').innerText = exp.toLocaleString() + ' ₽';
+        }
+
+        function addTransaction() {
+            const type = document.getElementById('t-type').value;
+            const amt = parseInt(document.getElementById('t-amount').value);
+            const cat = document.getElementById('t-cat').value;
+            const author = document.getElementById('t-author').value;
+
+            if(!amt || !cat) return alert('Заполните поля');
+
+            appData.finance.push({
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                type, amount: amt, cat, author
+            });
+            saveData();
+            renderFinance();
+            closeModal('trans-modal');
+        }
+
+        // === PLANNER LOGIC ===
+        function renderPlanner() {
+            const grid = document.getElementById('planner-grid');
+            grid.innerHTML = '';
+            
+            // Simulating Nov 2025
+            const year = 2025;
+            const month = 10; // Nov
+            const daysInMonth = 30;
+            const daysList = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateObj = new Date(year, month, d);
+                const dateKey = `${year}-11-${d < 10 ? '0'+d : d}`;
+                const dayName = daysList[dateObj.getDay()];
+                const tasks = appData.planner[dateKey] || [];
+                
+                // Color logic
+                const colors = ["#fce5cd", "#fff2cc", "#d9ead3", "#cfe2f3"];
+                const color = colors[(d-1)%4];
+
+                let tasksHTML = '';
+                // Render up to 5 tasks for demo
+                for(let i=0; i<5; i++) {
+                    const task = tasks[i] || {text: '', done: false, time: ''};
+                    tasksHTML += `
+                    <div class="task-row">
+                        <input type="checkbox" class="task-check" ${task.done ? 'checked' : ''} onchange="toggleTask('${dateKey}', ${i})">
+                        <input type="text" class="task-input" value="${task.text}" placeholder="Задача..." onchange="updateTask('${dateKey}', ${i}, this.value)">
+                    </div>`;
+                }
+
+                const html = `
+                <div class="day-card card" style="border-top-color: ${color}">
+                    <div class="day-header" style="background:${color}; margin:-20px -20px 10px -20px; padding:10px 20px;">
+                        <span>${d} Ноября</span>
+                        <span style="opacity:0.7">${dayName}</span>
+                    </div>
+                    ${tasksHTML}
+                </div>`;
+                grid.innerHTML += html;
+            }
+        }
+
+        function updateTask(dateKey, idx, val) {
+            if(!appData.planner[dateKey]) appData.planner[dateKey] = [];
+            if(!appData.planner[dateKey][idx]) appData.planner[dateKey][idx] = {done: false, time: ''};
+            
+            appData.planner[dateKey][idx].text = val;
+            saveData();
+        }
+
+        function toggleTask(dateKey, idx) {
+            if(!appData.planner[dateKey]) return;
+            appData.planner[dateKey][idx].done = !appData.planner[dateKey][idx].done;
+            saveData();
+        }
+
+    </script>
+</body>
+</html>
