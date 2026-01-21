@@ -3,554 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life Tracker 2026</title>
+    <title>Master Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #10B981;
-            --primary-dark: #059669;
-            --bg: #F3F4F6;
+            --primary: #2E7D32; /* Строгий зеленый */
+            --bg: #F5F5F5;
             --surface: #FFFFFF;
-            --text-main: #1F2937;
-            --text-sec: #6B7280;
-            --border: #E5E7EB;
-            --danger: #EF4444;
-            --success: #10B981;
-            --nav-height: 70px;
+            --border: #E0E0E0;
+            --text: #212121;
+            --danger: #D32F2F;
+            --success: #388E3C;
+            --nav-height: 60px;
         }
 
         body {
-            font-family: 'Manrope', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: var(--bg);
-            color: var(--text-main);
+            color: var(--text);
             margin: 0;
             padding: 0;
-            padding-bottom: calc(var(--nav-height) + 20px); /* Space for bottom nav */
+            padding-bottom: 80px; /* Место под меню */
             -webkit-tap-highlight-color: transparent;
         }
 
         .container {
-            max-width: 800px; /* Mobile focused width */
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
-        /* --- Header --- */
+        /* --- HEADER --- */
         header {
+            background: var(--surface);
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        h1 { margin: 0; font-size: 1.5rem; font-weight: 800; }
+        h2 { margin: 0; font-size: 1.2rem; }
+        select {
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #fff;
+            font-size: 1rem;
+        }
 
-        .controls select {
-            padding: 8px 16px;
-            border-radius: 12px;
-            border: none;
+        /* --- TABS --- */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* --- CARDS & DASHBOARD --- */
+        .card {
             background: var(--surface);
-            font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
         }
-
-        /* --- VIEWS --- */
-        .view-section { display: none; animation: fadeIn 0.3s ease; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- FINANCE SPECIFIC STYLES --- */
-        .balance-card {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .balance-label { font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px; }
-        .balance-total { font-size: 2.5rem; font-weight: 800; margin: 0; letter-spacing: -1px; }
-        
-        .finance-stats {
+        .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 12px;
+            gap: 10px;
         }
-        .stat-item span { display: block; font-size: 0.8rem; opacity: 0.8; }
-        .stat-item strong { display: block; font-size: 1.1rem; font-weight: 700; }
+        .stat-box {
+            background: #FAFAFA;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .stat-val { font-weight: bold; font-size: 1.1rem; display: block; }
+        .stat-label { font-size: 0.8rem; color: #666; }
 
-        /* Transactions List */
-        .transaction-list { list-style: none; padding: 0; margin: 0; }
-        .transaction-item {
+        /* --- TABLES (SHARED STYLES) --- */
+        .table-wrapper {
             background: var(--surface);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        }
-        .t-info { display: flex; gap: 12px; align-items: center; }
-        .t-icon { 
-            width: 40px; height: 40px; 
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; background: #F3F4F6;
-        }
-        .t-details h4 { margin: 0; font-size: 1rem; }
-        .t-details p { margin: 0; font-size: 0.8rem; color: var(--text-sec); }
-        .t-amount { font-weight: 700; font-size: 1rem; }
-        .amount-inc { color: var(--success); }
-        .amount-exp { color: var(--danger); }
-
-        /* --- HABIT STYLES (Preserved & Compacted) --- */
-        .habit-card {
-            background: var(--surface);
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        }
-        .habit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .habit-days { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .day-box {
-            min-width: 30px; height: 30px;
             border-radius: 8px;
-            background: #F3F4F6;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.8rem; font-weight: 600;
-            cursor: pointer;
-            color: #9CA3AF;
-            border: 1px solid transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
         }
-        .day-box.active { background: var(--primary); color: white; box-shadow: 0 2px 5px rgba(16,185,129,0.3); }
-        .day-box.today { border-color: var(--primary); color: var(--primary); }
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        th { background: #E8F5E9; font-weight: 600; font-size: 0.8rem; }
+        
+        /* STICKY COLUMN 1 */
+        th:first-child, td:first-child {
+            position: sticky;
+            left: 0;
+            background: var(--surface);
+            z-index: 2;
+            border-right: 2px solid #ccc;
+            text-align: left;
+            min-width: 140px;
+            max-width: 160px;
+            white-space: normal; /* Перенос текста в названиях */
+        }
+        th:first-child { z-index: 5; background: #E8F5E9; }
+
+        /* --- HABIT SPECIFIC --- */
+        .check-btn {
+            width: 24px; height: 24px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .check-btn.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+            position: relative;
+        }
+        .check-btn.checked::after {
+            content: '✓'; color: white;
+            position: absolute; top: -2px; left: 4px;
+        }
+
+        /* --- FINANCE SPECIFIC --- */
+        .amount-inc { color: var(--success); font-weight: bold; }
+        .amount-exp { color: var(--danger); font-weight: bold; }
+        .fin-date { font-size: 0.75rem; color: #666; display: block; margin-bottom: 2px; }
+        .fin-cat { font-weight: 500; }
+        .del-btn { color: #999; border: none; background: none; font-size: 1.2rem; }
 
         /* --- BOTTOM NAV --- */
         .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
+            position: fixed; bottom: 0; left: 0; width: 100%;
             height: var(--nav-height);
             background: var(--surface);
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 999;
         }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #9CA3AF;
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
+        .nav-btn {
+            background: none; border: none;
+            display: flex; flex-direction: column; align-items: center;
+            color: #757575; font-size: 0.7rem;
+            width: 50%;
         }
-        .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
+        .nav-btn.active { color: var(--primary); }
+        .nav-icon { font-size: 1.5rem; margin-bottom: 2px; }
 
-        /* --- FAB & MODALS --- */
-        .fab-group {
-            position: fixed;
-            bottom: calc(var(--nav-height) + 20px);
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* --- FAB & MODAL --- */
+        .fab {
+            position: fixed; bottom: 80px; right: 20px;
+            width: 56px; height: 56px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: none;
             z-index: 90;
         }
-        .fab {
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            border: none;
-            color: white;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .fab-main { background: var(--primary); }
-        .fab-exp { background: var(--danger); width: 48px; height: 48px; font-size: 20px; display: none; }
-        .fab-inc { background: var(--success); width: 48px; height: 48px; font-size: 20px; display: none; }
-        .fab-group.open .fab-exp, .fab-group.open .fab-inc { display: flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        @keyframes popIn { from { transform: scale(0) translateY(20px); } to { transform: scale(1) translateY(0); } }
-
-        /* Simple Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 200;
-            display: none;
-            justify-content: center;
-            align-items: center;
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000;
         }
         .modal {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 350px;
+            background: white; padding: 20px; width: 85%;
+            border-radius: 8px;
         }
         .modal input, .modal select {
-            width: 100%; margin-bottom: 15px; padding: 12px;
-            border: 1px solid var(--border); border-radius: 8px;
-            box-sizing: border-box; font-family: inherit;
+            width: 100%; margin-bottom: 10px; padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc; border-radius: 4px;
         }
-        .modal button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px;
-            font-weight: 700; cursor: pointer;
-        }
-        .btn-save { background: var(--primary); color: white; margin-bottom: 10px; }
-        .btn-cancel { background: transparent; color: var(--text-sec); }
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-full { flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-cancel { background: #eee; }
 
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1 id="pageTitle">Мои привычки</h1>
-        <div class="controls">
-            <select id="monthSelect"></select>
-        </div>
-    </header>
+<header>
+    <h2 id="page-title">Привычки</h2>
+    <select id="monthSelect"></select>
+</header>
 
-    <div id="view-habits" class="view-section active">
-        <div style="background: white; padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+<div class="container">
+
+    <div id="tab-habits" class="tab-content active">
+        <div class="card">
+            <div style="font-weight: bold; margin-bottom: 10px;">Прогресс за месяц</div>
             <div style="height: 150px;"><canvas id="habitChart"></canvas></div>
         </div>
 
-        <div id="habitsList">
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table id="habitsTable">
+                    <thead>
+                        <tr id="habitsHeader">
+                            <th>ПРИВЫЧКА</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="habitsBody">
+                        </tbody>
+                </table>
             </div>
-        <div style="height: 60px;"></div> </div>
+        </div>
+    </div>
 
-    <div id="view-finance" class="view-section">
-        <div class="balance-card">
-            <div class="balance-label">Текущий баланс</div>
-            <h2 class="balance-total" id="totalBalance">0 ₽</h2>
-            
-            <div class="finance-stats">
-                <div class="stat-item">
-                    <span>Доходы</span>
-                    <strong id="monthIncome">0 ₽</strong>
+    <div id="tab-finance" class="tab-content">
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <span style="color:#666; font-size: 0.9rem;">Текущий остаток</span>
+                <div style="font-size: 2rem; font-weight: bold;" id="finBalance">0 ₽</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-val amount-inc" id="finInc">+0 ₽</span>
+                    <span class="stat-label">Доход</span>
                 </div>
-                <div class="stat-item">
-                    <span>Расходы</span>
-                    <strong id="monthExpense">0 ₽</strong>
+                <div class="stat-box">
+                    <span class="stat-val amount-exp" id="finExp">-0 ₽</span>
+                    <span class="stat-label">Расход</span>
                 </div>
             </div>
         </div>
 
-        <h3 style="margin-bottom: 15px;">История операций</h3>
-        <ul class="transaction-list" id="transactionList">
-            </ul>
-        <div style="height: 60px;"></div> </div>
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ДАТА / КАТЕГОРИЯ</th>
+                            <th>СУММА</th>
+                            <th>КОММЕНТАРИЙ</th>
+                            <th>УДЛ.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financeBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<div class="fab-group" id="fabGroup">
-    <button class="fab fab-inc" onclick="openFinanceModal('income')" title="Доход">＋</button>
-    <button class="fab fab-exp" onclick="openFinanceModal('expense')" title="Расход">−</button>
-    <button class="fab fab-main" onclick="handleFabClick()">＋</button>
-</div>
+<button class="fab" onclick="handleFab()">+</button>
 
-<div class="modal-overlay" id="financeModal">
+<div class="modal-overlay" id="modal-habit">
     <div class="modal">
-        <h3 id="modalTitle">Добавить</h3>
-        <input type="number" id="fAmount" placeholder="Сумма (₽)" inputmode="numeric">
-        <input type="text" id="fCategory" placeholder="Категория (напр. Еда, Зарплата)">
+        <h3>Новая привычка</h3>
+        <input type="text" id="hName" placeholder="Название (напр. Чтение)">
+        <input type="number" id="hGoal" placeholder="Цель дней (по ум. 30)" value="30">
+        <div class="modal-btns">
+            <button class="btn-full btn-save" onclick="saveHabit()">Создать</button>
+            <button class="btn-full btn-cancel" onclick="closeModal('modal-habit')">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-finance">
+    <div class="modal">
+        <h3>Добавить операцию</h3>
+        <select id="fType">
+            <option value="expense">🔴 Расход</option>
+            <option value="income">🟢 Доход</option>
+        </select>
+        <input type="number" id="fAmount" placeholder="Сумма" inputmode="numeric">
+        <input type="text" id="fCategory" placeholder="Категория (Еда, Такси...)">
         <input type="text" id="fComment" placeholder="Комментарий">
         <input type="date" id="fDate">
-        <button class="btn-save" onclick="saveTransaction()">Сохранить</button>
-        <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+        <div class="modal-btns">
+            <button class="btn-full btn-save" onclick="saveTransaction()">Сохранить</button>
+            <button class="btn-full btn-cancel" onclick="closeModal('modal-finance')">Отмена</button>
+        </div>
     </div>
 </div>
 
 <nav class="bottom-nav">
-    <a class="nav-item active" onclick="switchTab('habits', this)">
-        <div class="nav-icon">🔥</div>
-        <span>Привычки</span>
-    </a>
-    <a class="nav-item" onclick="switchTab('finance', this)">
-        <div class="nav-icon">💰</div>
+    <button class="nav-btn active" onclick="switchTab('habits', this)">
+        <span class="nav-icon">📊</span>
+        <span>Трекер</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('finance', this)">
+        <span class="nav-icon">💰</span>
         <span>Финансы</span>
-    </a>
+    </button>
 </nav>
 
 <script>
-    // === GLOBAL STATE ===
+    // --- SETUP ---
     const months = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
     let state = {
+        tab: 'habits',
         year: 2026,
         month: new Date().getMonth(),
-        currentTab: 'habits',
-        habits: JSON.parse(localStorage.getItem('habits_v3')) || [],
-        finance: JSON.parse(localStorage.getItem('finance_v1')) || []
+        habits: JSON.parse(localStorage.getItem('habits_db')) || [],
+        finance: JSON.parse(localStorage.getItem('finance_db')) || []
     };
-
-    // Default habits if empty
-    if (state.habits.length === 0) {
-        state.habits = [
-            { id: 1, name: "Чтение 30 мин", goal: 25, checks: {} },
-            { id: 2, name: "Спорт", goal: 15, checks: {} },
-            { id: 3, name: "Медитация", goal: 20, checks: {} }
-        ];
-    }
 
     let chartInstance = null;
 
-    // === INIT ===
-    window.onload = () => {
-        initControls();
-        document.getElementById('fDate').valueAsDate = new Date();
-        renderAll();
-    };
+    // Defaults
+    if(state.habits.length === 0) {
+        state.habits = [
+            { id: 1, name: "Чтение", goal: 30, checks: {} },
+            { id: 2, name: "Спорт", goal: 15, checks: {} }
+        ];
+    }
 
-    function initControls() {
+    // --- INIT ---
+    window.onload = () => {
         const sel = document.getElementById('monthSelect');
         months.forEach((m, i) => {
             const opt = document.createElement('option');
             opt.value = i;
             opt.innerText = m;
-            if (i === state.month) opt.selected = true;
+            if(i === state.month) opt.selected = true;
             sel.appendChild(opt);
         });
         sel.addEventListener('change', (e) => {
             state.month = parseInt(e.target.value);
             renderAll();
         });
-    }
 
-    function switchTab(tab, el) {
-        state.currentTab = tab;
-        // UI Updates
-        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-        document.getElementById(`view-${tab}`).classList.add('active');
-        
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
+        document.getElementById('fDate').valueAsDate = new Date();
+        renderAll();
+    };
 
-        document.getElementById('pageTitle').innerText = tab === 'habits' ? 'Мои привычки' : 'Мой бюджет';
+    function switchTab(tab, btn) {
+        state.tab = tab;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
         
-        // Render
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        
+        document.getElementById('page-title').innerText = tab === 'habits' ? 'Привычки' : 'Бюджет';
         renderAll();
     }
 
     function renderAll() {
-        if (state.currentTab === 'habits') renderHabits();
+        if(state.tab === 'habits') renderHabits();
         else renderFinance();
     }
 
-    // === HABIT TRACKER LOGIC ===
+    // --- HABITS LOGIC (TABLE VIEW) ---
     function renderHabits() {
-        const container = document.getElementById('habitsList');
-        container.innerHTML = '';
-        const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
         const key = `${state.year}-${state.month}`;
+        const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+        
+        // Header
+        const hRow = document.getElementById('habitsHeader');
+        let hHTML = `<th>ПРИВЫЧКА</th>`;
+        for(let d=1; d<=daysInMonth; d++) {
+            const isToday = (d === new Date().getDate() && state.month === new Date().getMonth());
+            hHTML += `<th style="${isToday ? 'background:#C8E6C9' : ''}">${d}</th>`;
+        }
+        hHTML += `<th>%</th>`;
+        hRow.innerHTML = hHTML;
 
-        // Chart Data Prep
-        const dailyData = Array(daysInMonth).fill(0);
+        // Body
+        const tbody = document.getElementById('habitsBody');
+        tbody.innerHTML = '';
+        
+        const chartData = Array(daysInMonth).fill(0);
 
-        state.habits.forEach(habit => {
-            // Ensure data structure
-            if(!habit.checks[key]) habit.checks[key] = [];
+        state.habits.forEach(h => {
+            if(!h.checks[key]) h.checks[key] = [];
+            const checks = h.checks[key];
+            const percent = Math.round((checks.length / h.goal) * 100);
 
-            // Card HTML
-            const card = document.createElement('div');
-            card.className = 'habit-card';
-            
-            const doneCount = habit.checks[key].length;
-            const percent = Math.round((doneCount / habit.goal) * 100);
-
-            let daysHTML = '';
+            let row = `<td>${h.name}</td>`;
             for(let d=1; d<=daysInMonth; d++) {
-                const isChecked = habit.checks[key].includes(d);
-                if (isChecked) dailyData[d-1]++;
-                
-                const isToday = (d === new Date().getDate() && state.month === new Date().getMonth());
-                
-                daysHTML += `
-                    <div class="day-box ${isChecked ? 'active' : ''} ${isToday ? 'today' : ''}" 
-                         onclick="toggleHabit(${habit.id}, ${d})">
-                        ${d}
-                    </div>
+                const isChecked = checks.includes(d);
+                if(isChecked) chartData[d-1]++;
+                row += `
+                    <td>
+                        <div class="check-btn ${isChecked ? 'checked' : ''}" 
+                             onclick="toggleCheck(${h.id}, ${d})"></div>
+                    </td>
                 `;
             }
-
-            card.innerHTML = `
-                <div class="habit-header">
-                    <div>
-                        <div style="font-weight:700">${habit.name}</div>
-                        <div style="font-size:0.8rem; color:#6B7280">Цель: ${habit.goal} дн.</div>
-                    </div>
-                    <div style="font-weight:800; color:var(--primary)">${percent}%</div>
-                </div>
-                <div class="habit-days">${daysHTML}</div>
-            `;
-            container.appendChild(card);
+            row += `<td><b>${percent}%</b></td>`;
+            tbody.innerHTML += `<tr>${row}</tr>`;
         });
 
-        updateHabitChart(daysInMonth, dailyData);
+        drawChart(daysInMonth, chartData);
     }
 
-    function toggleHabit(habitId, day) {
+    function toggleCheck(id, day) {
         const key = `${state.year}-${state.month}`;
-        const habit = state.habits.find(h => h.id === habitId);
+        const h = state.habits.find(x => x.id === id);
+        const idx = h.checks[key].indexOf(day);
         
-        if(!habit.checks[key]) habit.checks[key] = [];
-        
-        const idx = habit.checks[key].indexOf(day);
-        if(idx > -1) habit.checks[key].splice(idx, 1);
-        else habit.checks[key].push(day);
+        if(idx > -1) h.checks[key].splice(idx, 1);
+        else h.checks[key].push(day);
 
-        localStorage.setItem('habits_v3', JSON.stringify(state.habits));
-        renderHabits(); // Re-render to update UI & Chart
+        localStorage.setItem('habits_db', JSON.stringify(state.habits));
+        renderHabits(); // Fast re-render
     }
 
-    function updateHabitChart(days, data) {
+    function drawChart(days, data) {
         const ctx = document.getElementById('habitChart').getContext('2d');
         if(chartInstance) chartInstance.destroy();
-        
         chartInstance = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
-                labels: Array.from({length: days}, (_, i) => i + 1),
+                labels: Array.from({length:days}, (_,i)=>i+1),
                 datasets: [{
-                    label: 'Выполнено',
+                    label: 'Активность',
                     data: data,
-                    backgroundColor: '#10B981',
-                    borderRadius: 4
+                    borderColor: '#2E7D32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                    fill: true,
+                    tension: 0.3
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, display: false },
-                    x: { grid: { display: false } }
-                },
-                plugins: { legend: { display: false } }
+                plugins: { legend: {display: false} },
+                scales: { y: {beginAtZero: true}, x: {grid: {display:false}} }
             }
         });
     }
 
-    // === FINANCE TRACKER LOGIC ===
+    // --- FINANCE LOGIC (TABLE VIEW) ---
     function renderFinance() {
-        const list = document.getElementById('transactionList');
-        list.innerHTML = '';
+        const tbody = document.getElementById('financeBody');
+        tbody.innerHTML = '';
         
-        // Filter by selected month
-        const currentMonthData = state.finance.filter(t => {
+        const currentData = state.finance.filter(t => {
             const d = new Date(t.date);
             return d.getMonth() === state.month && d.getFullYear() === state.year;
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        let inc=0, exp=0, total=0;
+        
+        // Calc Total Balance (All time)
+        state.finance.forEach(t => {
+            if(t.type === 'income') total += t.amount;
+            else total -= t.amount;
         });
 
-        // Sort by date desc
-        currentMonthData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        currentData.forEach(t => {
+            if(t.type === 'income') inc += t.amount;
+            else exp += t.amount;
 
-        let income = 0;
-        let expense = 0;
-
-        // Calculate Total Balance (All time)
-        const totalBalance = state.finance.reduce((acc, t) => {
-            return t.type === 'income' ? acc + t.amount : acc - t.amount;
-        }, 0);
-
-        currentMonthData.forEach(t => {
-            if(t.type === 'income') income += t.amount;
-            else expense += t.amount;
-
-            const li = document.createElement('li');
-            li.className = 'transaction-item';
-            const sign = t.type === 'income' ? '+' : '-';
-            const colorClass = t.type === 'income' ? 'amount-inc' : 'amount-exp';
+            const dateStr = new Date(t.date).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'});
+            const isInc = t.type === 'income';
             
-            li.innerHTML = `
-                <div class="t-info">
-                    <div class="t-icon">${t.type === 'income' ? '💰' : '💸'}</div>
-                    <div class="t-details">
-                        <h4>${t.category}</h4>
-                        <p>${new Date(t.date).toLocaleDateString()} • ${t.comment || ''}</p>
-                    </div>
-                </div>
-                <div class="t-amount ${colorClass}">${sign} ${t.amount.toLocaleString()} ₽</div>
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align:left;">
+                        <span class="fin-date">${dateStr}</span>
+                        <span class="fin-cat">${t.category}</span>
+                    </td>
+                    <td class="${isInc ? 'amount-inc' : 'amount-exp'}">
+                        ${isInc ? '+' : '-'}${t.amount}
+                    </td>
+                    <td style="font-size:0.8rem; color:#555; white-space:normal; max-width:150px;">
+                        ${t.comment || '-'}
+                    </td>
+                    <td>
+                        <button class="del-btn" onclick="delTrans(${t.id})">×</button>
+                    </td>
+                </tr>
             `;
-            list.appendChild(li);
         });
 
-        // Update Dashboard
-        document.getElementById('totalBalance').innerText = `${totalBalance.toLocaleString()} ₽`;
-        document.getElementById('monthIncome').innerText = `+${income.toLocaleString()} ₽`;
-        document.getElementById('monthExpense').innerText = `-${expense.toLocaleString()} ₽`;
+        // Update Stats
+        document.getElementById('finBalance').innerText = `${total.toLocaleString()} ₽`;
+        document.getElementById('finInc').innerText = `+${inc.toLocaleString()}`;
+        document.getElementById('finExp').innerText = `-${exp.toLocaleString()}`;
     }
 
-    // --- FAB & MODAL LOGIC ---
-    let currentTransType = 'expense';
-
-    function handleFabClick() {
-        if(state.currentTab === 'habits') {
-            const name = prompt("Новая привычка:");
-            if(name) {
-                state.habits.push({ id: Date.now(), name, goal: 30, checks: {} });
-                localStorage.setItem('habits_v3', JSON.stringify(state.habits));
-                renderHabits();
-            }
-        } else {
-            // Toggle FAB Menu
-            document.getElementById('fabGroup').classList.toggle('open');
+    function delTrans(id) {
+        if(confirm('Удалить запись?')) {
+            state.finance = state.finance.filter(t => t.id !== id);
+            localStorage.setItem('finance_db', JSON.stringify(state.finance));
+            renderFinance();
         }
     }
 
-    function openFinanceModal(type) {
-        currentTransType = type;
-        document.getElementById('fabGroup').classList.remove('open');
-        document.getElementById('financeModal').style.display = 'flex';
-        document.getElementById('modalTitle').innerText = type === 'income' ? 'Добавить доход' : 'Добавить расход';
-        // Auto-fill category suggestions could go here
+    // --- MODALS & ADDING ---
+    function handleFab() {
+        if(state.tab === 'habits') {
+            document.getElementById('modal-habit').style.display = 'flex';
+        } else {
+            document.getElementById('modal-finance').style.display = 'flex';
+        }
     }
 
-    function closeModal() {
-        document.getElementById('financeModal').style.display = 'none';
-        document.getElementById('fAmount').value = '';
-        document.getElementById('fCategory').value = '';
-        document.getElementById('fComment').value = '';
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function saveHabit() {
+        const name = document.getElementById('hName').value;
+        const goal = parseInt(document.getElementById('hGoal').value) || 30;
+        if(name) {
+            state.habits.push({ id: Date.now(), name, goal, checks: {} });
+            localStorage.setItem('habits_db', JSON.stringify(state.habits));
+            closeModal('modal-habit');
+            document.getElementById('hName').value = '';
+            renderHabits();
+        }
     }
 
     function saveTransaction() {
         const amt = parseFloat(document.getElementById('fAmount').value);
-        const cat = document.getElementById('fCategory').value || 'Разное';
-        const com = document.getElementById('fComment').value;
-        const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
-
-        if(!amt) return alert("Введите сумму");
-
-        const newTrans = {
-            id: Date.now(),
-            type: currentTransType,
-            amount: amt,
-            category: cat,
-            comment: com,
-            date: date
-        };
-
-        state.finance.push(newTrans);
-        localStorage.setItem('finance_v1', JSON.stringify(state.finance));
+        if(!amt) return alert('Введите сумму');
         
-        closeModal();
+        const item = {
+            id: Date.now(),
+            type: document.getElementById('fType').value,
+            amount: amt,
+            category: document.getElementById('fCategory').value || 'Разное',
+            comment: document.getElementById('fComment').value,
+            date: document.getElementById('fDate').value || new Date().toISOString().split('T')[0]
+        };
+        
+        state.finance.push(item);
+        localStorage.setItem('finance_db', JSON.stringify(state.finance));
+        
+        closeModal('modal-finance');
+        // Clear inputs
+        document.getElementById('fAmount').value = '';
+        document.getElementById('fCategory').value = '';
+        document.getElementById('fComment').value = '';
         renderFinance();
     }
+
 </script>
 
 </body>
