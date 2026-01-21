@@ -2,611 +2,476 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyLife OS - Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер Привычек</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2d3436;
-            --accent-green: #00b894;
-            --accent-red: #d63031;
-            --accent-blue: #0984e3;
-            --accent-purple: #6c5ce7;
-            --bg-color: #f5f6fa;
+            --primary: #4CAF50;
+            --bg: #f5f7fa;
             --card-bg: #ffffff;
-            --text-main: #2d3436;
-            --text-light: #b2bec3;
-            --shadow: 0 10px 20px rgba(0,0,0,0.05);
-            --radius: 20px;
-            --nav-height: 70px;
+            --text: #333;
+            --border: #e0e0e0;
+            --danger: #ff6b6b;
+            --header-bg: #e8f5e9;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); overflow-x: hidden; }
-        
-        /* === УТИЛИТЫ === */
-        .hidden { display: none !important; }
-        .flex { display: flex; }
-        .center { display: flex; justify-content: center; align-items: center; }
-        .col { flex-direction: column; }
-        .between { justify-content: space-between; }
-        .bold { font-weight: 700; }
-        
-        /* === ЭКРАН ВХОДА (Paywall) === */
-        #auth-screen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
         }
-        .auth-card {
-            background: white; width: 100%; max-width: 400px; padding: 40px 30px;
-            border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center;
-        }
-        .logo { font-size: 2rem; font-weight: 800; margin-bottom: 10px; background: -webkit-linear-gradient(#667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .auth-input {
-            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; transition: 0.3s;
-        }
-        .auth-input:focus { border-color: #6c5ce7; }
-        .btn-primary {
-            width: 100%; padding: 15px; background: #6c5ce7; color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
-        }
-        .btn-primary:active { transform: scale(0.98); }
-        .sub-text { font-size: 0.8rem; color: #888; margin-top: 15px; }
 
-        /* === ОСНОВНОЙ ЛЕЙАУТ === */
-        .app-header {
-            padding: 20px; display: flex; justify-content: space-between; align-items: center;
-            background: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        .date-picker {
-            background: #f1f2f6; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; border: none; outline: none;
+
+        /* --- Header & Controls --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .view-section { animation: fadeIn 0.4s ease-out; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { margin: 0; font-size: 1.5rem; }
 
-        /* === КАРТОЧКИ === */
+        .controls select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 1rem;
+            background: var(--card-bg);
+        }
+
+        /* --- Dashboard (Top Section) --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
         .card {
-            background: var(--card-bg); border-radius: var(--radius); padding: 20px;
-            margin-bottom: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .top-habits h3, .chart-container h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .top-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .top-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+        .top-item:last-child { border-bottom: none; }
+        .top-score { font-weight: bold; color: var(--primary); }
+
+        /* --- Main Tracker Table --- */
+        .tracker-wrapper {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            /* Smooth scrolling */
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px; /* Force scroll on mobile */
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        /* Sticky First Column (Habit Names) */
+        th:first-child, td:first-child {
+            position: sticky;
+            left: 0;
+            background: var(--card-bg);
+            z-index: 2;
+            text-align: left;
+            min-width: 180px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
         
-        /* === ПРИВЫЧКИ === */
-        .habit-header-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: #f8f9fa; padding: 15px; border-radius: 16px; text-align: center; }
-        .stat-num { font-size: 1.5rem; font-weight: 800; color: var(--accent-green); }
-        .stat-label { font-size: 0.7rem; text-transform: uppercase; color: #b2bec3; letter-spacing: 1px; }
-        
-        /* График-спарклайн */
-        .chart-container { width: 100%; height: 60px; display: flex; align-items: flex-end; gap: 2px; margin-top: 10px; }
-        .chart-bar { flex: 1; background: #dfe6e9; border-radius: 2px; transition: height 0.5s; }
-        .chart-bar.active { background: var(--accent-green); }
+        th { background: var(--header-bg); font-weight: 600; }
 
-        .habit-row {
-            display: flex; align-items: center; justify-content: space-between; padding: 15px 0;
-            border-bottom: 1px solid #f1f2f6;
-        }
-        .habit-info h4 { font-size: 1rem; margin-bottom: 5px; }
-        .habit-info p { font-size: 0.8rem; color: var(--text-light); }
-        .habit-progress-bar {
-            height: 6px; width: 100px; background: #f1f2f6; border-radius: 3px; overflow: hidden; margin-top: 5px;
-        }
-        .habit-fill { height: 100%; background: var(--accent-green); transition: width 0.3s; }
-        
-        .day-toggles { display: flex; gap: 5px; }
-        .day-toggle {
-            width: 32px; height: 32px; border-radius: 8px; border: 2px solid #f1f2f6;
-            display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s; color: #b2bec3;
-        }
-        .day-toggle.done { background: var(--accent-green); border-color: var(--accent-green); color: white; box-shadow: 0 4px 10px rgba(0, 184, 148, 0.4); }
+        /* Habit Rows */
+        .habit-name { display: flex; align-items: center; gap: 8px; }
+        .habit-icon { font-size: 1.2rem; }
 
-        /* === ФИНАНСЫ === */
-        .balance-hero {
-            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; text-align: center; padding: 30px 20px;
-        }
-        .balance-amount { font-size: 2.5rem; font-weight: 800; margin: 10px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
-        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: -30px; padding: 0 20px; }
-        .fin-stat-card { background: white; padding: 15px; border-radius: 16px; box-shadow: var(--shadow); text-align: center; }
-        .income-val { color: var(--accent-green); font-weight: 700; font-size: 1.1rem; }
-        .expense-val { color: var(--accent-red); font-weight: 700; font-size: 1.1rem; }
-
-        .trans-list { margin-top: 20px; }
-        .trans-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 15px;
-            background: white; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-        .trans-icon {
-            width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; margin-right: 15px;
-        }
-        .trans-icon.inc { background: rgba(0, 184, 148, 0.1); color: var(--accent-green); }
-        .trans-icon.exp { background: rgba(214, 48, 49, 0.1); color: var(--accent-red); }
-
-        /* === ПЛАНЕР === */
-        .planner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .day-card { border-top: 6px solid #dfe6e9; padding-top: 15px; }
-        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .day-date { font-weight: 700; font-size: 1.1rem; }
-        .day-weekday { color: var(--text-light); font-size: 0.9rem; font-style: italic; }
-        
-        .task-item { display: flex; align-items: center; margin-bottom: 8px; gap: 10px; }
-        .custom-checkbox {
-            width: 22px; height: 22px; border: 2px solid #dfe6e9; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: transparent; transition: 0.2s;
-        }
-        .custom-checkbox.checked { background: var(--accent-purple); border-color: var(--accent-purple); color: white; }
-        .task-text { flex: 1; border: none; background: transparent; font-size: 0.9rem; padding: 5px; border-bottom: 1px dashed transparent; }
-        .task-text:focus { border-bottom-color: var(--accent-purple); outline: none; }
-        .task-time { font-size: 0.75rem; background: #f1f2f6; padding: 4px 8px; border-radius: 6px; color: #636e72; }
-
-        /* === FAB & MODAL === */
-        .fab {
-            position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px;
-            background: var(--accent-purple); color: white; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; font-size: 2rem;
-            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4); cursor: pointer; transition: 0.2s; z-index: 500;
-        }
-        .fab:active { transform: scale(0.9); }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: flex-end;
-        }
-        .modal-overlay.active { display: flex; animation: slideUp 0.3s ease; }
-        .modal-sheet {
-            background: white; width: 100%; max-width: 600px; border-radius: 30px 30px 0 0; padding: 30px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .form-label { display: block; font-size: 0.8rem; color: #b2bec3; margin-bottom: 5px; margin-top: 15px; }
-        .form-select, .form-input {
-            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #dfe6e9; font-size: 1rem; outline: none; background: #fdfdfd;
+        /* Checkboxes */
+        .day-check {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
         }
 
-        /* === НАВИГАЦИЯ === */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height);
-            background: white; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 500;
+        /* Progress Bars */
+        .progress-bar-bg {
+            background: #eee;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 80px;
+            margin: 0 auto;
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; color: #b2bec3; cursor: pointer; transition: 0.3s;
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
         }
-        .nav-item.active { color: var(--accent-purple); transform: translateY(-5px); }
-        .nav-icon { font-size: 28px; margin-bottom: 4px; }
-        .nav-label { font-size: 0.7rem; font-weight: 600; }
 
-        /* === PRO BADGE === */
-        .pro-badge {
-            background: gold; color: #d35400; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; vertical-align: middle;
+        /* Percentage Badge */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.8rem;
         }
+        .badge-high { background: #e8f5e9; color: #2e7d32; }
+        .badge-med { background: #fff3e0; color: #ef6c00; }
+        .badge-low { background: #ffebee; color: #c62828; }
+
+        /* Weekly Summary Row */
+        .summary-row td {
+            background: #fafafa;
+            font-weight: bold;
+            color: #666;
+        }
+
+        /* Add Habit Button */
+        .add-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .add-btn:hover { background: #43a047; }
+
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <div class="logo">MyLife OS</div>
-            <p style="margin-bottom: 30px;">Система управления жизнью <span class="pro-badge">PRO</span></p>
-            
-            <input type="text" id="reg-name" placeholder="Ваше имя" class="auth-input">
-            <input type="email" id="reg-email" placeholder="Email" class="auth-input">
-            
-            <button class="btn-primary" onclick="handleLogin()">Получить доступ (99₽)</button>
-            <p class="sub-text">Безопасная оплата через Tinkoff / SberPay</p>
-            <p class="sub-text" style="margin-top: 5px; cursor: pointer; text-decoration: underline;" onclick="handleLogin()">У меня уже есть аккаунт</p>
+<div class="container">
+    <header>
+        <div>
+            <h1>Трекер Привычек</h1>
+            <small style="color: #666">Разработано для GitHub • Версия 1.0</small>
+        </div>
+        <div class="controls">
+            <select id="monthSelect"></select>
+            <select id="yearSelect">
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="card top-habits">
+            <h3>ТОП-5 Привычек</h3>
+            <ul class="top-list" id="topList">
+                </ul>
+        </div>
+        
+        <div class="card chart-container">
+            <h3>Месячный прогресс</h3>
+            <div style="height: 200px; width: 100%;">
+                <canvas id="progressChart"></canvas>
+            </div>
         </div>
     </div>
 
-    <div id="app-content" class="hidden">
-        
-        <header class="app-header">
-            <div style="font-weight: 800; font-size: 1.2rem; color: var(--text-main);">
-                Привет, <span id="user-name-display">Alex</span> 👋
-            </div>
-            <select class="date-picker" id="month-picker" onchange="changeMonth()">
-                <option value="10">Ноябрь 2025</option>
-                <option value="11">Декабрь 2025</option>
-                <option value="0">Январь 2026</option>
-            </select>
-        </header>
-
-        <section id="view-habits" class="view-section container">
-            <div class="card">
-                <div class="habit-header-stats">
-                    <div class="stat-box">
-                        <div class="stat-num" id="habit-total-percent">89%</div>
-                        <div class="stat-label">Продуктивность</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-num">5</div>
-                        <div class="stat-label">Топ привычек</div>
-                    </div>
-                </div>
-                <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">График активности (ноябрь)</div>
-                <div class="chart-container" id="habit-sparkline">
-                    </div>
-            </div>
-
-            <div class="card">
-                <h3 style="margin-bottom: 20px;">Ежедневные привычки</h3>
-                <div id="habit-list-container">
-                    </div>
-            </div>
-        </section>
-
-        <section id="view-finance" class="view-section hidden">
-            <div class="card balance-hero">
-                <div class="stat-label" style="color: rgba(255,255,255,0.8);">Общий баланс</div>
-                <div class="balance-amount" id="fin-total-balance">0 ₽</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Кэшфлоу: <span id="fin-cashflow">+0 ₽</span></div>
-            </div>
-
-            <div class="finance-grid">
-                <div class="fin-stat-card">
-                    <div class="income-val" id="fin-income-val">0 ₽</div>
-                    <div class="stat-label">Доходы</div>
-                </div>
-                <div class="fin-stat-card">
-                    <div class="expense-val" id="fin-expense-val">0 ₽</div>
-                    <div class="stat-label">Расходы</div>
-                </div>
-            </div>
-
-            <div class="container">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
-                    <h3>История операций</h3>
-                    <div style="font-size: 0.8rem; color: var(--accent-purple);">Показать все</div>
-                </div>
-                <div id="transaction-list">
-                    </div>
-            </div>
-
-            <div class="fab" onclick="openModal('modal-finance')">
-                <span class="material-icons">add</span>
-            </div>
-        </section>
-
-        <section id="view-planner" class="view-section container hidden">
-            <h3 style="margin-bottom: 15px;">Календарь задач</h3>
-            <div class="planner-grid" id="planner-container">
-                </div>
-        </section>
-
-    </div>
-
-    <div class="modal-overlay" id="modal-finance" onclick="if(event.target === this) closeModal('modal-finance')">
-        <div class="modal-sheet">
-            <h2>Новая операция</h2>
-            
-            <label class="form-label">Тип операции</label>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="flex: 1; background: var(--accent-red);" onclick="setTransType('expense')">Расход</button>
-                <button class="btn-primary" style="flex: 1; background: var(--accent-green);" onclick="setTransType('income')">Доход</button>
-            </div>
-            <input type="hidden" id="new-trans-type" value="expense">
-
-            <label class="form-label">Сумма</label>
-            <input type="number" id="new-trans-amount" class="form-input" placeholder="0 ₽">
-
-            <label class="form-label">Категория</label>
-            <select id="new-trans-cat" class="form-select">
-                <option>Продукты</option> <option>Транспорт</option> <option>Кафе</option>
-                <option>Аренда</option> <option>Зарплата</option>
-            </select>
-
-            <label class="form-label">Автор (Кто тратит?)</label>
-            <select id="new-trans-author" class="form-select">
-                <option>Я (Муж)</option>
-                <option>Жена</option>
-                <option>Общее</option>
-            </select>
-
-            <button class="btn-primary" style="margin-top: 25px;" onclick="addTransaction()">Сохранить</button>
+    <div class="tracker-wrapper">
+        <div class="table-scroll">
+            <table id="habitTable">
+                <thead>
+                    <tr id="headerRow">
+                        <th>ЕЖЕДНЕВНЫЕ ПРИВЫЧКИ</th>
+                        <th>Цель</th>
+                        <th>Сделано</th>
+                        <th>Осталось</th>
+                        <th>Прогресс</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
         </div>
     </div>
 
-    <nav class="bottom-nav hidden" id="main-nav">
-        <div class="nav-item active" onclick="switchView('habits')">
-            <span class="material-icons nav-icon">check_circle</span>
-            <span class="nav-label">Привычки</span>
-        </div>
-        <div class="nav-item" onclick="switchView('finance')">
-            <span class="material-icons nav-icon">account_balance_wallet</span>
-            <span class="nav-label">Финансы</span>
-        </div>
-        <div class="nav-item" onclick="switchView('planner')">
-            <span class="material-icons nav-icon">event_note</span>
-            <span class="nav-label">Планер</span>
-        </div>
-    </nav>
+    <button class="add-btn" onclick="addNewHabit()">+ Добавить привычку</button>
+</div>
 
-    <script>
-        // === 1. БАЗА ДАННЫХ (Local Storage Simulation) ===
-        // В реальном проекте тут будет Firebase или Supabase
+<script>
+    // --- Data & State ---
+    const months = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+    
+    // Default Habits from screenshot
+    const defaultHabits = [
+        { id: 1, name: "Чтение 30 минут в день", icon: "📚", goal: 25 },
+        { id: 2, name: "Медитация", icon: "🧘", goal: 18 },
+        { id: 3, name: "Осознанное питание", icon: "🥗", goal: 30 },
+        { id: 4, name: "Два часа без соц сетей", icon: "📵", goal: 21 },
+        { id: 5, name: "Ежедневная запись итогов", icon: "✍️", goal: 30 },
+        { id: 6, name: "Спорт / тренировка", icon: "🏋️", goal: 17 }
+    ];
+
+    let currentYear = 2026;
+    let currentMonth = 0; // 0 = Jan
+    let habitData = JSON.parse(localStorage.getItem('habitData_v1')) || {};
+    let chartInstance = null;
+
+    // Initialize
+    window.onload = () => {
+        initControls();
+        renderApp();
+    };
+
+    function initControls() {
+        const mSelect = document.getElementById('monthSelect');
+        months.forEach((m, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = m;
+            if(i === new Date().getMonth()) opt.selected = true;
+            mSelect.appendChild(opt);
+        });
+        currentMonth = parseInt(mSelect.value);
+
+        mSelect.addEventListener('change', (e) => {
+            currentMonth = parseInt(e.target.value);
+            renderApp();
+        });
+
+        document.getElementById('yearSelect').addEventListener('change', (e) => {
+            currentYear = parseInt(e.target.value);
+            renderApp();
+        });
+    }
+
+    // --- Core Render Logic ---
+    function renderApp() {
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const dataKey = `${currentYear}-${currentMonth}`;
         
-        const DB = {
-            user: localStorage.getItem('mylife_user') || null,
-            habits: JSON.parse(localStorage.getItem('mylife_habits')) || [
-                {id: 1, name: "Чтение 30 минут", goal: 30, history: {}}, 
-                {id: 2, name: "Медитация", goal: 20, history: {}},
-                {id: 3, name: "Спорт / Тренировка", goal: 15, history: {}},
-                {id: 4, name: "Без соцсетей", goal: 25, history: {}}
-            ],
-            finance: JSON.parse(localStorage.getItem('mylife_finance')) || [
-                {id: 1, date: '2025-11-01', type: 'expense', amount: 2500, cat: 'Продукты', author: 'Я (Муж)'},
-                {id: 2, date: '2025-11-05', type: 'income', amount: 150000, cat: 'Зарплата', author: 'Я (Муж)'},
-                {id: 3, date: '2025-11-13', type: 'expense', amount: 45000, cat: 'Аренда', author: 'Общее'}
-            ],
-            planner: JSON.parse(localStorage.getItem('mylife_planner')) || {},
-
-            save() {
-                localStorage.setItem('mylife_habits', JSON.stringify(this.habits));
-                localStorage.setItem('mylife_finance', JSON.stringify(this.finance));
-                localStorage.setItem('mylife_planner', JSON.stringify(this.planner));
-            }
-        };
-
-        // Текущее состояние
-        let currentState = {
-            view: 'habits',
-            year: 2025,
-            month: 10 // Ноябрь (JS считает с 0)
-        };
-
-        // === 2. ЛОГИКА АВТОРИЗАЦИИ ===
-        function handleLogin() {
-            const name = document.getElementById('reg-name').value || "Пользователь";
-            localStorage.setItem('mylife_user', name);
-            document.getElementById('user-name-display').innerText = name;
-            
-            // Анимация ухода экрана
-            document.getElementById('auth-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-                document.getElementById('main-nav').classList.remove('hidden');
-                initApp();
-            }, 500);
+        // Ensure data structure exists for this month
+        if (!habitData[dataKey]) {
+            habitData[dataKey] = defaultHabits.map(h => ({
+                ...h,
+                checks: Array(32).fill(false) // index 1-31
+            }));
         }
-
-        // === 3. ИНИЦИАЛИЗАЦИЯ ===
-        function initApp() {
-            if(DB.user) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-                document.getElementById('main-nav').classList.remove('hidden');
-                document.getElementById('user-name-display').innerText = DB.user;
-            }
-            renderHabits();
-            renderFinance();
-            renderPlanner();
-            renderSparkline();
-        }
-
-        // Проверка при загрузке
-        if(DB.user) initApp();
-
-        // === 4. НАВИГАЦИЯ ===
-        function switchView(viewName) {
-            // Скрыть все секции
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            // Показать нужную
-            document.getElementById('view-' + viewName).classList.remove('hidden');
-            
-            // Подсветка кнопки
-            const navIndex = ['habits', 'finance', 'planner'].indexOf(viewName);
-            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
-        }
-
-        function changeMonth() {
-            currentState.month = parseInt(document.getElementById('month-picker').value);
-            // Перерисовка всего при смене месяца
-            renderHabits();
-            renderPlanner(); 
-            // Финансы можно тоже отфильтровать
-        }
-
-        // === 5. ЛОГИКА: ПРИВЫЧКИ ===
-        function renderHabits() {
-            const container = document.getElementById('habit-list-container');
-            container.innerHTML = '';
-            
-            // Генерация дней текущей недели (симуляция)
-            const daysToShow = [1,2,3,4,5,6,7]; // Пн-Вс
-
-            DB.habits.forEach(habit => {
-                const completedCount = Object.keys(habit.history).filter(k => k.startsWith(`${currentState.year}-${currentState.month}`)).length;
-                const progressPercent = Math.min(100, Math.round((completedCount / habit.goal) * 100));
-
-                let daysHTML = '';
-                daysToShow.forEach(day => {
-                    // Ключ даты: 2025-10-Day
-                    const key = `${currentState.year}-${currentState.month}-${day}`;
-                    const isDone = habit.history[key];
-                    daysHTML += `
-                        <div class="day-toggle ${isDone ? 'done' : ''}" onclick="toggleHabit(${habit.id}, ${day})">
-                            ${day}
-                        </div>
-                    `;
-                });
-
-                const html = `
-                    <div class="habit-row">
-                        <div class="habit-info">
-                            <h4>${habit.name}</h4>
-                            <div class="day-toggles">${daysHTML}</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <span class="stat-num" style="font-size: 1rem;">${progressPercent}%</span>
-                            <div class="habit-progress-bar">
-                                <div class="habit-fill" style="width: ${progressPercent}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += html;
-            });
-            
-            // Общий процент (фейковый расчет для красоты)
-            document.getElementById('habit-total-percent').innerText = Math.floor(Math.random() * (95 - 80) + 80) + "%";
-        }
-
-        function toggleHabit(id, day) {
-            const habit = DB.habits.find(h => h.id === id);
-            const key = `${currentState.year}-${currentState.month}-${day}`;
-            
-            if(habit.history[key]) delete habit.history[key];
-            else habit.history[key] = true;
-            
-            DB.save();
-            renderHabits();
-        }
-
-        function renderSparkline() {
-            const container = document.getElementById('habit-sparkline');
-            let html = '';
-            for(let i=0; i<30; i++) {
-                const h = Math.floor(Math.random() * 80 + 20); // Случайная высота
-                const active = i > 25 ? 'active' : ''; // Последние дни активны
-                html += `<div class="chart-bar ${active}" style="height: ${h}%"></div>`;
-            }
-            container.innerHTML = html;
-        }
-
-        // === 6. ЛОГИКА: ФИНАНСЫ ===
-        function renderFinance() {
-            const list = document.getElementById('transaction-list');
-            list.innerHTML = '';
-            let income = 0, expense = 0;
-
-            DB.finance.forEach(t => {
-                if(t.type === 'income') income += t.amount;
-                else expense += t.amount;
-
-                const icon = t.type === 'income' ? 'arrow_downward' : 'shopping_bag';
-                const colorClass = t.type === 'income' ? 'inc' : 'exp';
-                const sign = t.type === 'income' ? '+' : '-';
-                const amountColor = t.type === 'income' ? 'var(--accent-green)' : 'var(--text-main)';
-
-                const html = `
-                    <div class="trans-item">
-                        <div class="flex center">
-                            <div class="trans-icon ${colorClass}">
-                                <span class="material-icons">${icon}</span>
-                            </div>
-                            <div>
-                                <div class="bold">${t.cat}</div>
-                                <div style="font-size: 0.8rem; color: #b2bec3;">${t.author} • ${t.date.slice(5)}</div>
-                            </div>
-                        </div>
-                        <div class="bold" style="color: ${amountColor};">${sign} ${t.amount.toLocaleString()} ₽</div>
-                    </div>
-                `;
-                list.innerHTML += html;
-            });
-
-            document.getElementById('fin-total-balance').innerText = (income - expense).toLocaleString() + " ₽";
-            document.getElementById('fin-cashflow').innerText = (income - expense > 0 ? "+" : "") + (income - expense).toLocaleString() + " ₽";
-            document.getElementById('fin-income-val').innerText = income.toLocaleString() + " ₽";
-            document.getElementById('fin-expense-val').innerText = expense.toLocaleString() + " ₽";
-        }
-
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         
-        function setTransType(type) {
-            document.getElementById('new-trans-type').value = type;
-            // Визуальная индикация (упрощено)
-            alert("Выбран тип: " + (type==='income' ? 'Доход' : 'Расход'));
+        const currentData = habitData[dataKey];
+        renderTable(daysInMonth, currentData);
+        updateStats(daysInMonth, currentData);
+    }
+
+    function renderTable(days, habits) {
+        const headerRow = document.getElementById('headerRow');
+        const tbody = document.getElementById('tableBody');
+        
+        // 1. Rebuild Header (keep static columns, regen days)
+        // Clear old days (between Goal and Done)
+        while (headerRow.children.length > 2 + 4) { 
+            headerRow.removeChild(headerRow.children[2]);
+        }
+        
+        // Insert Day Headers
+        const frag = document.createDocumentFragment();
+        // Insert before the last 4 columns (Done, Left, Prog, %)
+        const refNode = headerRow.children[2]; 
+        
+        for(let d=1; d<=days; d++) {
+            const th = document.createElement('th');
+            th.innerText = d;
+            th.style.minWidth = "30px";
+            // Highlight weekends logic could go here
+            frag.appendChild(th);
+        }
+        headerRow.insertBefore(frag, refNode);
+
+        // 2. Render Rows
+        tbody.innerHTML = '';
+        habits.forEach((habit, hIndex) => {
+            const tr = document.createElement('tr');
+            
+            // Name
+            tr.innerHTML = `
+                <td>
+                    <div class="habit-name">
+                        <span class="habit-icon">${habit.icon}</span>
+                        ${habit.name}
+                    </div>
+                </td>
+                <td>${habit.goal}</td>
+            `;
+
+            // Checkboxes
+            for(let d=1; d<=days; d++) {
+                const td = document.createElement('td');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'day-check';
+                cb.checked = habit.checks[d];
+                cb.onclick = () => toggleCheck(hIndex, d, cb.checked);
+                td.appendChild(cb);
+                tr.appendChild(td);
+            }
+
+            // Stats Columns
+            const doneCount = habit.checks.filter(Boolean).length;
+            const remaining = Math.max(0, habit.goal - doneCount);
+            const percent = Math.round((doneCount / habit.goal) * 100) || 0;
+            const badgeClass = percent >= 80 ? 'badge-high' : (percent >= 50 ? 'badge-med' : 'badge-low');
+
+            tr.innerHTML += `
+                <td>${doneCount}</td>
+                <td>${remaining}</td>
+                <td>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${Math.min(100, percent)}%"></div>
+                    </div>
+                </td>
+                <td><span class="badge ${badgeClass}">${percent}%</span></td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    // --- Actions ---
+    function toggleCheck(habitIndex, day, isChecked) {
+        const key = `${currentYear}-${currentMonth}`;
+        habitData[key][habitIndex].checks[day] = isChecked;
+        saveData();
+        renderApp(); // Re-render to update stats/charts
+    }
+
+    function addNewHabit() {
+        const name = prompt("Название новой привычки:");
+        if(!name) return;
+        const goal = parseInt(prompt("Цель (дней):", "30")) || 30;
+        
+        const key = `${currentYear}-${currentMonth}`;
+        habitData[key].push({
+            id: Date.now(),
+            name: name,
+            icon: "✨",
+            goal: goal,
+            checks: Array(32).fill(false)
+        });
+        saveData();
+        renderApp();
+    }
+
+    function saveData() {
+        localStorage.setItem('habitData_v1', JSON.stringify(habitData));
+    }
+
+    // --- Stats & Charts ---
+    function updateStats(daysInMonth, habits) {
+        // 1. Top 5 List
+        const sorted = [...habits].sort((a,b) => {
+            const pa = (a.checks.filter(Boolean).length / a.goal);
+            const pb = (b.checks.filter(Boolean).length / b.goal);
+            return pb - pa;
+        }).slice(0, 5);
+
+        const list = document.getElementById('topList');
+        list.innerHTML = sorted.map(h => {
+            const p = Math.round((h.checks.filter(Boolean).length / h.goal) * 100);
+            return `<li class="top-item">
+                <span>${h.icon} ${h.name}</span>
+                <span class="top-score">${p}%</span>
+            </li>`;
+        }).join('');
+
+        // 2. Line Chart (Total Daily Completion %)
+        const dailyData = [];
+        for(let d=1; d<=daysInMonth; d++) {
+            let totalChecks = 0;
+            habits.forEach(h => { if(h.checks[d]) totalChecks++; });
+            // Calculate % of habits done that day vs total active habits
+            const dailyPercent = Math.round((totalChecks / habits.length) * 100);
+            dailyData.push(dailyPercent);
         }
 
-        function addTransaction() {
-            const type = document.getElementById('new-trans-type').value;
-            const amount = parseInt(document.getElementById('new-trans-amount').value);
-            const cat = document.getElementById('new-trans-cat').value;
-            const author = document.getElementById('new-trans-author').value;
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        if(chartInstance) chartInstance.destroy();
 
-            if(!amount) return alert("Введите сумму");
-
-            DB.finance.unshift({
-                id: Date.now(),
-                date: new Date().toISOString().split('T')[0],
-                type, amount, cat, author
-            });
-            DB.save();
-            renderFinance();
-            closeModal('modal-finance');
-        }
-
-        // === 7. ЛОГИКА: ПЛАНЕР ===
-        function renderPlanner() {
-            const container = document.getElementById('planner-container');
-            container.innerHTML = '';
-
-            const daysInMonth = 30; // Упрощено
-            const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-            for(let d=1; d<=daysInMonth; d++) {
-                const dateKey = `${currentState.year}-${currentState.month}-${d}`;
-                const tasks = DB.planner[dateKey] || [];
-                const dayName = weekDays[(d-1) % 7];
-                const color = ["#fff2cc", "#d9ead3", "#cfe2f3", "#fad390"][(d-1)%4]; // Цвета шапки
-
-                // Рендер 3-х задач для демо
-                let tasksHTML = '';
-                for(let i=0; i<3; i++) {
-                    const t = tasks[i] || {text: '', done: false, time: ''};
-                    tasksHTML += `
-                        <div class="task-item">
-                            <div class="custom-checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${dateKey}', ${i})">
-                                <span class="material-icons" style="font-size: 16px;">check</span>
-                            </div>
-                            <input type="text" class="task-text" value="${t.text}" placeholder="Задача..." onchange="saveTask('${dateKey}', ${i}, this.value)">
-                            ${t.time ? `<span class="task-time">${t.time}</span>` : ''}
-                        </div>
-                    `;
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: daysInMonth}, (_, i) => i + 1),
+                datasets: [{
+                    label: 'Общая продуктивность (%)',
+                    data: dailyData,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: {
+                    legend: { display: false }
                 }
-
-                const html = `
-                    <div class="card day-card" style="border-top-color: ${color}">
-                        <div class="day-header">
-                            <div class="day-date">${d} Ноября</div>
-                            <div class="day-weekday">${dayName}</div>
-                        </div>
-                        <div class="task-list">
-                            ${tasksHTML}
-                        </div>
-                        <div style="margin-top: 10px; font-size: 0.8rem; color: #b2bec3; text-align: right;">
-                            Настроение: 🙂
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += html;
             }
-        }
+        });
+    }
 
-        function saveTask(dateKey, index, text) {
-            if(!DB.planner[dateKey]) DB.planner[dateKey] = [];
-            if(!DB.planner[dateKey][index]) DB.planner[dateKey][index] = {done: false, time: '10:00'};
-            
-            DB.planner[dateKey][index].text = text;
-            DB.save();
-        }
+</script>
 
-        function toggleTask(dateKey, index) {
-            if(!DB.planner[dateKey] || !DB.planner[dateKey][index]) return;
-            DB.planner[dateKey][index].done = !DB.planner[dateKey][index].done;
-            DB.save();
-            renderPlanner();
-        }
-
-    </script>
 </body>
 </html>
